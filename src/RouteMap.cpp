@@ -425,9 +425,15 @@ static inline bool ReadWindAndCurrents(RouteMapConfiguration &configuration, Pos
  climatology_wind_atlas &atlas, int &data_mask)
 {
     /* read current data */
-    if(!configuration.Currents ||
-       !Current(configuration, p->lat, p->lon, C, VC, data_mask))
-        C = VC = 0;
+    if (!configuration.Currents || !Current(configuration, p->lat, p->lon, C, VC, data_mask)) {
+       C = VC = 0.;
+    }
+
+    WG = 0.;
+    VWG = 0.;
+
+    W = 0.;
+    VW = 0.;
 
     for(;;) {
         if(!configuration.grib_is_data_deficient && GribWind(configuration, p->lat, p->lon, WG, VWG)) {
