@@ -2359,7 +2359,9 @@ void WeatherRouting::Start(RouteMapOverlay *routemapoverlay)
         it != m_WaitingRouteMaps.end(); it++)
         if(*it == routemapoverlay)
             return;
-
+    if (m_WaitingRouteMaps.size() == 0 && m_RunningRouteMaps.size() == 0) {
+        SendPluginMessage(wxString(_T("OCPN_DRAW_PI_SET_CACHE")), _T(""));
+    }
     routemapoverlay->Reset();
     m_RoutesToRun++;
     m_WaitingRouteMaps.push_back(routemapoverlay);
