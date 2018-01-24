@@ -819,26 +819,26 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
                     goto loop;
                 }
                 second_pass = true;
-                degrees -= 1.;
-                goto loop;
             }
             configuration.land_crossing = true;
             continue;
         }
         /* Boundary test */
-        if(configuration.DetectBoundary && EntersBoundary(dlat, dlon)) {
-            if (!second_pass) {
-                cnt--;
-                if (cnt > 0) {
-                    degrees -= 1.;
-                    goto loop;
+        if(configuration.DetectBoundary) {
+            double dlat1, dlon1; 
+            ll_gc_ll(lat, lon, heading_resolve(BG), dist +0.05, &dlat1, &dlon1);
+            if (EntersBoundary(dlat1, dlon1)) {
+                if (!second_pass) {
+                    cnt--;
+                    if (cnt > 0) {
+                        degrees -= 1.;
+                        goto loop;
+                    }
+                    second_pass = true;
                 }
-                second_pass = true;
-                degrees -= 1.;
-                goto loop;
+                configuration.boundary_crossing = true;
+                continue;
             }
-            configuration.boundary_crossing = true;
-            continue;
         }
         /* crosses cyclone track(s)? */
         if(configuration.AvoidCycloneTracks &&
