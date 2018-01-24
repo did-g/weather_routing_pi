@@ -70,6 +70,7 @@ public:
     bool CrossesLand(double dlat, double dlon);
     int SailChanges();
     bool EntersBoundary(double dlat, double dlon);
+    bool EntersBoundary(double dlat, double dlon, bool *inc);
     
     double lat, lon;
 

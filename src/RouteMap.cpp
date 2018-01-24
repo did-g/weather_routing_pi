@@ -827,8 +827,9 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         if(configuration.DetectBoundary) {
             double dlat1, dlon1; 
             ll_gc_ll(lat, lon, heading_resolve(BG), dist +0.05, &dlat1, &dlon1);
-            if (EntersBoundary(dlat1, dlon1)) {
-                if (!second_pass) {
+            bool inc;
+            if (EntersBoundary(dlat1, dlon1, &inc )) {
+                if (!inc && !second_pass) {
                     cnt--;
                     if (cnt > 0) {
                         degrees -= 1.;
@@ -995,13 +996,27 @@ int Position::SailChanges()
     return (polar != parent->polar) + parent->SailChanges();
 }
 
-bool Position::EntersBoundary(double dlat, double dlon)
+bool Position::EntersBoundary(double dlat, double dlon, bool *inc)
 {
     struct FindClosestBoundaryLineCrossing_t t;
-    t.dStartLat = lat, t.dStartLon = heading_resolve(lon);
-    t.dEndLat = dlat, t.dEndLon = heading_resolve(dlon);
+    t.dStartLat = lat; 
+    t.dStartLon = heading_resolve(lon);
+    t.dEndLat = dlat;
+    t.dEndLon = heading_resolve(dlon);
     t.sBoundaryState = wxT("Active");
-    return RouteMap::ODFindClosestBoundaryLineCrossing(&t);
+
+    // we request any type
+    bool ret = RouteMap::ODFindClosestBoundaryLineCrossing(&t);
+    if (inc) {
+        // XXX should be leaving an inclusion boundary
+        *inc = t.sBoundaryType == wxT("Inclusion");
+    }
+    return ret;
+}
+
+bool Position::EntersBoundary(double dlat, double dlon)
+{
+    return EntersBoundary(dlat, dlon, 0);
 }
 
 SkipPosition::SkipPosition(Position *p, int q)
