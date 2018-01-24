@@ -878,9 +878,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
     return true;
 }
 
-/* propagate to the end position in the configuration, and return the number of seconds it takes
-   and heading H
-*/
+/* propagate to the end position in the configuration, and return the number of seconds it takes */
 double Position::PropagateToEnd(RouteMapConfiguration &configuration, double &H, int &data_mask)
 {
     double S = Swell(configuration, lat, lon);
