@@ -250,7 +250,8 @@ struct RouteMapPosition {
 };
 
 struct RouteMapConfiguration {
-    RouteMapConfiguration () : StartLon(0), EndLon(0), grib_is_data_deficient(false) {} /* avoid waiting forever in update longitudes */
+    RouteMapConfiguration () : slow_start(false), slow_end(false), StartLon(0), EndLon(0), 
+          grib_is_data_deficient(false) {} /* avoid waiting forever in update longitudes */
     bool Update();
 
     wxString RouteGUID;       /* Route GUID if any */
@@ -259,6 +260,12 @@ struct RouteMapConfiguration {
 
     double DeltaTime; /* default time in seconds between propagations */
     double UsedDeltaTime; /* time in seconds between propagations */
+    bool slow_start;
+    bool slow_end;
+
+    int  slow_step;
+    int  cur_step;
+
 
     Boat boat;
     wxString boatFileName;

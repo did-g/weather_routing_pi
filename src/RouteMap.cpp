@@ -2516,16 +2516,26 @@ bool RouteMap::Propagate()
 
     // request the next grib
     // in a different thread (grib record averaging going in parallel)
-    if(origin.empty() && (configuration.DetectBoundary || configuration.DetectLand)) {
+    delta = 60.;
+    if(origin.empty() && configuration.DeltaTime > delta && (configuration.DetectBoundary || configuration.DetectLand)) {
         // for starting need a successfull propagate, which means 3 points.
-        // for now use a small stuff 5 min, should find the min
-        delta = wxMin(configuration.DeltaTime, 300.);
+        m_Configuration.slow_start = true;
+        m_Configuration.slow_step = wxMin(trunc(configuration.DeltaTime/delta), 10);
+        m_Configuration.cur_step = 0;
+    }
+    else if (m_Configuration.slow_start == true) {
+        if (m_Configuration.cur_step < m_Configuration.slow_step) {
+            m_Configuration.cur_step++;
+        }
+        else {
+            m_Configuration.slow_start = false;
+            delta = m_Configuration.DeltaTime - m_Configuration.slow_step*delta;
+            if (delta <= 0.)
+                delta = m_Configuration.DeltaTime;
+        }
     }
     else {
-        if (origin.back()->delta == 300. && configuration.DeltaTime != 300.)
-             delta = configuration.DeltaTime -300;
-        else
-            delta = configuration.DeltaTime;
+        delta = configuration.DeltaTime;
     }
     m_NewTime += wxTimeSpan(0, 0, delta);
     m_bNeedsGrib = configuration.UseGrib;
