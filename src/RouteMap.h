@@ -40,6 +40,7 @@ typedef std::list<IsoRoute*> IsoRouteList;
 struct PlotData
 {
     wxDateTime time;
+    double delta;
     double lat, lon;
     double VBG, BG, VB, B, VW, W, VWG, WG, VC, C, WVHT;
     double VW_GUST;
@@ -70,6 +71,7 @@ public:
     bool CrossesLand(double dlat, double dlon);
     int SailChanges();
     bool EntersBoundary(double dlat, double dlon);
+    bool EntersBoundary(double dlat, double dlon, double dist);
     bool EntersBoundary(double dlat, double dlon, bool *inc);
     
     double lat, lon;
