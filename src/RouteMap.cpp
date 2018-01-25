@@ -830,6 +830,10 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
             ll_gc_ll(lat, lon, heading_resolve(BG), dist +0.05, &dlat1, &dlon1);
             double bearing, dist2end;
             ll_gc_ll_reverse(lat, lon, configuration.EndLat, configuration.EndLon, &bearing, &dist2end);
+            if (!configuration.slow_end && dist *3 >= dist2end) {
+                // printf("enter slow end! %f %f\n", dist, dist2end);
+                configuration.slow_end = true;
+            }
 
             bool inc;
             if (EntersBoundary(dlat1, dlon1, dist2end /*-0.05*/, &inc )) {
@@ -2528,7 +2532,7 @@ bool RouteMap::Propagate()
         // for starting need a successfull propagate, which means 3 points.
         m_Configuration.slow_start = true;
         m_Configuration.slow_step = wxMin(trunc(configuration.DeltaTime/delta), 10);
-        m_Configuration.cur_step = 0;
+        m_Configuration.cur_step = 1;
     }
     else if (m_Configuration.slow_start == true) {
         if (m_Configuration.cur_step < m_Configuration.slow_step) {
@@ -2536,9 +2540,18 @@ bool RouteMap::Propagate()
         }
         else {
             m_Configuration.slow_start = false;
+            m_Configuration.slow_step = 1;
             delta = m_Configuration.DeltaTime - m_Configuration.slow_step*delta;
             if (delta <= 0.)
                 delta = m_Configuration.DeltaTime;
+        }
+    }
+    else if (m_Configuration.slow_end && configuration.DeltaTime > delta) {
+        m_Configuration.slow_step++;
+        delta = configuration.DeltaTime / m_Configuration.slow_step;
+        // printf("break %f\n", delta);
+        if (delta < 120) {
+            delta = 120.;
         }
     }
     else {
@@ -2614,6 +2627,7 @@ bool RouteMap::Propagate()
     if(configuration.land_crossing)
         m_bLandCrossing = true;
 
+    m_Configuration.slow_end = configuration.slow_end;
     Unlock();
 
     return true;
@@ -2687,7 +2701,8 @@ void RouteMap::Reset()
     m_bFinished = false;
     m_bLandCrossing = false;
     m_bBoundaryCrossing = false;
-
+    m_Configuration.slow_end = false;
+    m_Configuration.slow_start = false;
     Unlock();
 }
 
