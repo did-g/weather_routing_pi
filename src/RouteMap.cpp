@@ -1014,14 +1014,14 @@ bool Position::EntersBoundary(double dlat, double dlon, double dist, bool *inc)
         // XXX should be leaving an inclusion boundary
         *inc = t.sBoundaryType == wxT("Inclusion");
     }
-    // if (ret ) printf("%f %f\n", t.dCrossingDistance , dist); 
-    ret = ret && t.dCrossingDistance <= dist;
+    //if (ret && t.dCrossingDistance != 0) printf("%f from %f %f d %f %d\n", t.dCrossingDistance , dlat, dlon, dist, inc?*inc:-1); 
+    ret = ret && (t.dCrossingDistance <= dist);
     return ret;
 }
 
 bool Position::EntersBoundary(double dlat, double dlon)
 {
-    return EntersBoundary(dlat, dlon, 0., 0);
+    return EntersBoundary(dlat, dlon, 100000., 0);
 }
 
 SkipPosition::SkipPosition(Position *p, int q)
