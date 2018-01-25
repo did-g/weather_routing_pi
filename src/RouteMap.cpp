@@ -792,9 +792,9 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
 
             double d1 = dlat - configuration.EndLat, d2 = dlon - configuration.EndLon;
             d2 *= cos(deg2rad(dlat))/2; // correct for latitude
-            bearing = rad2deg(atan2(d2, d1));
             dist = sqrt(pow(d1, 2) + pow(d2, 2));
 
+            bearing = rad2deg(atan2(d2, d1));
             d1 = configuration.StartLat - dlat, d2 = configuration.StartLon - dlon;
             bearing1 = rad2deg(atan2(d2, d1));
             dist1 = sqrt(pow(d1, 2) + pow(d2, 2));
@@ -828,8 +828,11 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         if(configuration.DetectBoundary) {
             double dlat1, dlon1; 
             ll_gc_ll(lat, lon, heading_resolve(BG), dist +0.05, &dlat1, &dlon1);
+            double bearing, dist2end;
+            ll_gc_ll_reverse(lat, lon, configuration.EndLat, configuration.EndLon, &bearing, &dist2end);
+
             bool inc;
-            if (EntersBoundary(dlat1, dlon1, &inc )) {
+            if (EntersBoundary(dlat1, dlon1, dist2end /*-0.05*/, &inc )) {
                 if (!inc && !second_pass) {
                     cnt--;
                     if (cnt > 0) {
@@ -995,7 +998,7 @@ int Position::SailChanges()
     return (polar != parent->polar) + parent->SailChanges();
 }
 
-bool Position::EntersBoundary(double dlat, double dlon, bool *inc)
+bool Position::EntersBoundary(double dlat, double dlon, double dist, bool *inc)
 {
     struct FindClosestBoundaryLineCrossing_t t;
     t.dStartLat = lat; 
@@ -1003,33 +1006,22 @@ bool Position::EntersBoundary(double dlat, double dlon, bool *inc)
     t.dEndLat = dlat;
     t.dEndLon = heading_resolve(dlon);
     t.sBoundaryState = wxT("Active");
+    t.dCrossingDistance = 0.;
 
     // we request any type
     bool ret = RouteMap::ODFindClosestBoundaryLineCrossing(&t);
-    if (inc) {
+    if (ret && inc) {
         // XXX should be leaving an inclusion boundary
         *inc = t.sBoundaryType == wxT("Inclusion");
     }
+    // if (ret ) printf("%f %f\n", t.dCrossingDistance , dist); 
+    ret = ret && t.dCrossingDistance <= dist;
     return ret;
-}
-
-bool Position::EntersBoundary(double dlat, double dlon, double dist)
-{
-    struct FindClosestBoundaryLineCrossing_t t;
-    t.dStartLat = lat;
-    t.dStartLon = heading_resolve(lon);
-    t.dEndLat = dlat;
-    t.dEndLon = heading_resolve(dlon);
-    t.sBoundaryState = wxT("Active");
-    t.dCrossingDistance = 0.;
-    // last point don't care about boundary after it.
-    bool ret = RouteMap::ODFindClosestBoundaryLineCrossing(&t);
-    return ret && t.dCrossingDistance < dist;
 }
 
 bool Position::EntersBoundary(double dlat, double dlon)
 {
-    return EntersBoundary(dlat, dlon, (bool *)0);
+    return EntersBoundary(dlat, dlon, 0., 0);
 }
 
 SkipPosition::SkipPosition(Position *p, int q)

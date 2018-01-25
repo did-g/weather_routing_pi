@@ -71,9 +71,8 @@ public:
     bool CrossesLand(double dlat, double dlon);
     int SailChanges();
     bool EntersBoundary(double dlat, double dlon);
-    bool EntersBoundary(double dlat, double dlon, double dist);
-    bool EntersBoundary(double dlat, double dlon, bool *inc);
-    
+    bool EntersBoundary(double dlat, double dlon, double dist, bool *inc);
+   
     double lat, lon;
 
     double parent_heading; /* angle relative to true wind we sailed from parent to this position */
