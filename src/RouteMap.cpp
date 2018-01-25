@@ -582,6 +582,7 @@ bool RoutePoint::GetPlotData(RoutePoint *next, double dt, RouteMapConfiguration 
     data.WVHT = Swell(configuration, lat, lon);
     data.VW_GUST = Gust(configuration, lat, lon);
     data.tacks = tacks;
+    data.delta = dt;
 
     climatology_wind_atlas atlas;
     int data_mask = 0; // not used for plotting yet
@@ -1111,13 +1112,39 @@ int Position::SailChanges()
     return (polar != parent->polar) + parent->SailChanges();
 }
 
-bool Position::EntersBoundary(double dlat, double dlon)
+bool Position::EntersBoundary(double dlat, double dlon, bool *inc)
 {
     struct FindClosestBoundaryLineCrossing_t t;
     t.dStartLat = lat, t.dStartLon = heading_resolve(lon);
     t.dEndLat = dlat, t.dEndLon = heading_resolve(dlon);
     t.sBoundaryState = wxT("Active");
-    return RouteMap::ODFindClosestBoundaryLineCrossing(&t);
+
+    // we request any type
+    bool ret = RouteMap::ODFindClosestBoundaryLineCrossing(&t);
+    if (inc) {
+        // XXX should be leaving an inclusion boundary
+        *inc = t.sBoundaryType == wxT("Inclusion");
+    }
+    return ret;
+}
+
+bool Position::EntersBoundary(double dlat, double dlon, double dist)
+{
+    struct FindClosestBoundaryLineCrossing_t t;
+    t.dStartLat = lat;
+    t.dStartLon = heading_resolve(lon);
+    t.dEndLat = dlat;
+    t.dEndLon = heading_resolve(dlon);
+    t.sBoundaryState = wxT("Active");
+    t.dCrossingDistance = 0.;
+    // last point don't care about boundary after it.
+    bool ret = RouteMap::ODFindClosestBoundaryLineCrossing(&t);
+    return ret && t.dCrossingDistance < dist;
+}
+
+bool Position::EntersBoundary(double dlat, double dlon)
+{
+    return EntersBoundary(dlat, dlon, (bool *)0);
 }
 
 SkipPosition::SkipPosition(Position *p, int q)
