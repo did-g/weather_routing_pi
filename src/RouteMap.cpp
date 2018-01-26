@@ -2559,9 +2559,9 @@ bool RouteMap::Propagate()
         else {
             m_Configuration.slow_start = false;
             m_Configuration.slow_step = 1;
-            delta = m_Configuration.DeltaTime - m_Configuration.slow_step*delta;
+            delta = m_Configuration.DeltaTime - m_Configuration.cur_step*delta;
             if (delta <= 0.)
-                delta = m_Configuration.DeltaTime;
+                delta += m_Configuration.DeltaTime;
         }
     }
     else if (m_Configuration.slow_end && configuration.DeltaTime > delta) {
