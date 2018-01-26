@@ -693,15 +693,24 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         bearing2 = heading_resolve( parent_bearing + configuration.MaxSearchAngle);
     }
     // configuration.ByDegrees
-    int loop_count = (int)wxMax(trunc(configuration.ByDegrees),1.);
+    int loop_count = (int)wxMax(trunc(configuration.ByDegrees) ,1.) -1;
+    double prev_deg = -1000;
+    double mid_deg = -1000;
+    // 0 ..  5 .. 10
+    //  1234  6789
+    // 0          10
+
     for(std::list<double>::iterator it = configuration.DegreeSteps.begin();
-        it != configuration.DegreeSteps.end(); it++) {
+        it != configuration.DegreeSteps.end(); it++, prev_deg = mid_deg) {
 
         double degrees = (*it);
-        bool   second_pass = (it == configuration.DegreeSteps.begin());
-        int cnt = loop_count;
 
+        mid_deg = degrees;
+        bool   second_pass = (it == configuration.DegreeSteps.begin() || loop_count == 0);
+        int cnt = loop_count*2;
+        // ===================
         loop:
+
         double H = heading_resolve(degrees);
         double B, VB, BG, VBG;
 
@@ -815,8 +824,12 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         if(configuration.DetectLand && CrossesLand(dlat, nrdlon)) {
             if (!second_pass) {
                 cnt--;
+                l1:
                 if (cnt > 0) {
-                    degrees -= 1.;
+                    prev_deg += 1.;
+                    if (prev_deg == mid_deg)
+                    	    goto l1;
+                    degrees = prev_deg;
                     goto loop;
                 }
                 second_pass = true;
@@ -839,10 +852,15 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
             if (EntersBoundary(dlat1, dlon1, dist2end /*-0.05*/, &inc )) {
                 if (!inc && !second_pass) {
                     cnt--;
+                    l2:
                     if (cnt > 0) {
-                        degrees -= 1.;
+                        prev_deg += 1.;
+                    	if (prev_deg == mid_deg)
+                    	    goto l2;
+                        degrees = prev_deg;
                         goto loop;
                     }
+                    // printf("skip def %f %d  at %f %f to %f %f \n ", skip_deg, loop_count, lat, lon, dlat1, dlon1);
                     second_pass = true;
                 }
                 configuration.boundary_crossing = true;
