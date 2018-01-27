@@ -1029,6 +1029,11 @@ bool Position::EntersBoundary(double dlat, double dlon, double dist, bool *inc)
     t.dEndLon = heading_resolve(dlon);
     t.sBoundaryState = wxT("Active");
     t.dCrossingDistance = 0.;
+    if (inc && *inc == true) {
+        // XXX FIXME hack overload inclusion detection for saying:
+        // find any boundary not the closest.
+        t.dCrossingDistance = -1.;
+    }
 
     // we request any type
     bool ret = RouteMap::ODFindClosestBoundaryLineCrossing(&t);
