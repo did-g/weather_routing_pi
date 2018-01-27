@@ -708,6 +708,8 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         mid_deg = degrees;
         bool   second_pass = (it == configuration.DegreeSteps.begin() || loop_count == 0);
         int cnt = loop_count*2;
+        bool find = false;
+        bool fine_search = false;
         // ===================
         loop:
 
@@ -843,14 +845,20 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
             ll_gc_ll(lat, lon, heading_resolve(BG), dist +0.05, &dlat1, &dlon1);
             double bearing, dist2end;
             ll_gc_ll_reverse(lat, lon, configuration.EndLat, configuration.EndLon, &bearing, &dist2end);
-            if (!configuration.slow_end && dist *3 >= dist2end) {
-                // printf("enter slow end! %f %f\n", dist, dist2end);
-                configuration.slow_end = true;
+            bool inc = true;
+            if (dist *3 >= dist2end) {
+                if (!configuration.slow_end) {
+                    // printf("enter slow end! %f %f\n", dist, dist2end);
+                    configuration.slow_end = true;
+                }
+            }
+            else {
+                // XXX hack resquest any crossing not the closest
+                inc = false;
             }
 
-            bool inc;
             if (EntersBoundary(dlat1, dlon1, dist2end /*-0.05*/, &inc )) {
-                if (!inc && !second_pass) {
+                if (fine_search || (!inc && !second_pass)) {
                     cnt--;
                     l2:
                     if (cnt > 0) {
@@ -858,12 +866,16 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
                     	if (prev_deg == mid_deg)
                     	    goto l2;
                         degrees = prev_deg;
+                        fine_search = true;
                         goto loop;
                     }
                     // printf("skip def %f %d  at %f %f to %f %f \n ", skip_deg, loop_count, lat, lon, dlat1, dlon1);
                     second_pass = true;
+                    fine_search = false;
                 }
-                configuration.boundary_crossing = true;
+                if (!find) {
+                    configuration.boundary_crossing = true;
+                }
                 continue;
             }
         }
@@ -891,6 +903,21 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
             points = rp;
         }
         count++;
+        find = true;
+        if (fine_search) {
+            cnt--;
+            l3:
+            if (cnt > 0) {
+                prev_deg += 1.;
+                if (prev_deg == mid_deg)
+                    goto l3;
+                degrees = prev_deg;
+                goto loop;
+            }
+            // printf("skip def %f %d  at %f %f to %f %f \n ", skip_deg, loop_count, lat, lon, dlat1, dlon1);
+            second_pass = true;
+            fine_search = false;
+        }
     }
 
     if(count < 3) { /* would get eliminated anyway, but save the extra steps */
