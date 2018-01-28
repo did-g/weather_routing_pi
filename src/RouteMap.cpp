@@ -692,6 +692,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         bearing1 = heading_resolve( parent_bearing - configuration.MaxSearchAngle);
         bearing2 = heading_resolve( parent_bearing + configuration.MaxSearchAngle);
     }
+    bool moving_away = true;
     // configuration.ByDegrees
     int loop_count = (int)wxMax(trunc(configuration.ByDegrees) ,1.) -1;
     double prev_deg = -1000;
@@ -846,13 +847,15 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
             double bearing, dist2end;
             ll_gc_ll_reverse(lat, lon, configuration.EndLat, configuration.EndLon, &bearing, &dist2end);
             bool inc = true;
-            if (dist *3 >= dist2end) {
+            if (dist *2.5 >= dist2end) {
                 if (!configuration.slow_end) {
                     // printf("enter slow end! %f %f\n", dist, dist2end);
                     configuration.slow_end = true;
                 }
             }
             else {
+                if ((dist *3) * configuration.slow_step > dist2end)
+                   moving_away = false;
                 // XXX hack resquest any crossing not the closest
                 inc = false;
             }
@@ -2602,6 +2605,9 @@ bool RouteMap::Propagate()
         // printf("break %f\n", delta);
         if (delta < 120) {
             delta = 120.;
+            m_Configuration.slow_step--;
+            m_Configuration.slow_step =wxMax(m_Configuration.slow_step, 1);            
+
         }
     }
     else {
