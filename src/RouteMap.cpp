@@ -833,9 +833,11 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
                     if (prev_deg == mid_deg)
                     	    goto l1;
                     degrees = prev_deg;
+                    fine_search = true;
                     goto loop;
                 }
                 second_pass = true;
+                fine_search = false;
             }
             configuration.land_crossing = true;
             continue;
@@ -846,7 +848,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
             ll_gc_ll(lat, lon, heading_resolve(BG), dist +0.05, &dlat1, &dlon1);
             double bearing, dist2end;
             ll_gc_ll_reverse(lat, lon, configuration.EndLat, configuration.EndLon, &bearing, &dist2end);
-            bool inc = true;
+            bool inc = false;
             if (dist *2.5 >= dist2end) {
                 if (!configuration.slow_end) {
                     // printf("enter slow end! %f %f\n", dist, dist2end);
@@ -857,11 +859,13 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
                 if ((dist *3) * configuration.slow_step > dist2end)
                    moving_away = false;
                 // XXX hack resquest any crossing not the closest
-                inc = false;
+                inc = true;
             }
 
             if (EntersBoundary(dlat1, dlon1, dist2end /*-0.05*/, &inc )) {
-                if (fine_search || (!inc && !second_pass)) {
+                // entersBoundary set inc to true if boundary type is inclusive
+                if (!second_pass && (fine_search || !inc )) {
+                    // printf(".");
                     cnt--;
                     l2:
                     if (cnt > 0) {
@@ -908,6 +912,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         count++;
         find = true;
         if (fine_search) {
+            // printf("+");
             cnt--;
             l3:
             if (cnt > 0) {
@@ -1070,6 +1075,7 @@ bool Position::EntersBoundary(double dlat, double dlon, double dist, bool *inc)
     if (ret && inc) {
         // XXX should be leaving an inclusion boundary
         *inc = t.sBoundaryType == wxT("Inclusion");
+        //printf("%c", *inc?'=':'_');
     }
     //if (ret && t.dCrossingDistance != 0) printf("%f from %f %f d %f %d\n", t.dCrossingDistance , dlat, dlon, dist, inc?*inc:-1); 
     ret = ret && (t.dCrossingDistance <= dist);
@@ -1350,7 +1356,7 @@ bool IsoRoute::ContainsRoute(IsoRoute *r)
    computation time */
 void IsoRoute::ReduceClosePoints()
 {
-    const double eps = 2e-5; /* resolution of 2 meters should be sufficient */
+    const double eps = 3e-4; /* resolution of 30 meters should be sufficient */
     Position *p = skippoints->point;
     while(p != skippoints->point->prev) {
         Position *n = p->next;
