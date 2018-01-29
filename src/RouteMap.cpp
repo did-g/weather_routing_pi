@@ -823,67 +823,86 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
            Polar::VelocityApparentWind(VB, H, VW) > configuration.MaxApparentWindKnots)
             continue;
 
-        /* landfall test */
-        if(configuration.DetectLand && CrossesLand(dlat, nrdlon)) {
-            if (!second_pass) {
-                cnt--;
-                l1:
-                if (cnt > 0) {
-                    prev_deg += 1.;
-                    if (prev_deg == mid_deg)
-                    	    goto l1;
-                    degrees = prev_deg;
-                    fine_search = true;
-                    goto loop;
-                }
-                second_pass = true;
-                fine_search = false;
-            }
-            configuration.land_crossing = true;
-            continue;
-        }
-        /* Boundary test */
-        if(configuration.DetectBoundary) {
-            double dlat1, dlon1; 
-            ll_gc_ll(lat, lon, heading_resolve(BG), dist +0.05, &dlat1, &dlon1);
+        if(configuration.DetectLand || configuration.DetectBoundary) {
             double bearing, dist2end;
+            double dist2test;
+            double dlat1, dlon1; 
+
+            // it's not an error if there's boundaries after we reach destination
             ll_gc_ll_reverse(lat, lon, configuration.EndLat, configuration.EndLon, &bearing, &dist2end);
-            bool inc = false;
-            if (dist *2.5 >= dist2end) {
-                if (!configuration.slow_end) {
-                    // printf("enter slow end! %f %f\n", dist, dist2end);
-                    configuration.slow_end = true;
-                }
+            if (dist2end < dist) {
+                dist2test = dist2end;
             }
             else {
-                if ((dist *3) * configuration.slow_step > dist2end)
-                   moving_away = false;
-                // XXX hack resquest any crossing not the closest
-                inc = true;
+                dist2test = dist + 0.05;
+            }
+            ll_gc_ll(lat, lon, heading_resolve(BG), dist2test, &dlat1, &dlon1);
+            /* landfall test */
+
+            if(configuration.DetectLand) {
+                double ndlon1 = dlon1;
+                if (ndlon1 > 360) {
+                    ndlon1 -360;
+                }
+                if (CrossesLand(dlat1, ndlon1)) {
+                    if (!second_pass) {
+                        cnt--;
+                        l1:
+                        if (cnt > 0) {
+                            prev_deg += 1.;
+                            if (prev_deg == mid_deg)
+                    	        goto l1;
+                            degrees = prev_deg;
+                            fine_search = true;
+                            goto loop;
+                        }
+                        second_pass = true;
+                        fine_search = false;
+                    }
+                    configuration.land_crossing = true;
+                    continue;
+                }
             }
 
-            if (EntersBoundary(dlat1, dlon1, dist2end /*-0.05*/, &inc )) {
-                // entersBoundary set inc to true if boundary type is inclusive
-                if (!second_pass && (fine_search || !inc )) {
-                    // printf(".");
-                    cnt--;
-                    l2:
-                    if (cnt > 0) {
-                        prev_deg += 1.;
-                    	if (prev_deg == mid_deg)
-                    	    goto l2;
-                        degrees = prev_deg;
-                        fine_search = true;
-                        goto loop;
+            /* Boundary test */
+            if(configuration.DetectBoundary) {
+                bool inc = false;
+                if (dist *2.5 >= dist2end) {
+                    if (!configuration.slow_end) {
+                        // printf("enter slow end! %f %f\n", dist, dist2end);
+                        configuration.slow_end = true;
                     }
-                    // printf("skip def %f %d  at %f %f to %f %f \n ", skip_deg, loop_count, lat, lon, dlat1, dlon1);
-                    second_pass = true;
-                    fine_search = false;
                 }
-                if (!find) {
-                    configuration.boundary_crossing = true;
+                else {
+                    if ((dist *3) * configuration.slow_step > dist2end)
+                        moving_away = false;
+                    // XXX hack resquest any crossing not the closest
+                    inc = true;
                 }
-                continue;
+
+                if (EntersBoundary(dlat1, dlon1, &inc )) {
+                    // entersBoundary set inc to true if boundary type is inclusive
+                    if (!second_pass && (fine_search || !inc )) {
+                        // printf(".");
+                        cnt--;
+                        l2:
+                        if (cnt > 0) {
+                            prev_deg += 1.;
+                            if (prev_deg == mid_deg)
+                    	        goto l2;
+                            degrees = prev_deg;
+                            fine_search = true;
+                            goto loop;
+                        }
+                        // printf("skip def %f %d  at %f %f to %f %f \n ", skip_deg, loop_count, lat, lon, dlat1, dlon1);
+                        second_pass = true;
+                        fine_search = false;
+                    }
+                    if (!find) {
+                        configuration.boundary_crossing = true;
+                    }
+                    continue;
+                }
             }
         }
         /* crosses cyclone track(s)? */
@@ -1055,7 +1074,7 @@ int Position::SailChanges()
     return (polar != parent->polar) + parent->SailChanges();
 }
 
-bool Position::EntersBoundary(double dlat, double dlon, double dist, bool *inc)
+bool Position::EntersBoundary(double dlat, double dlon, bool *inc)
 {
     struct FindClosestBoundaryLineCrossing_t t;
     t.dStartLat = lat; 
@@ -1066,7 +1085,7 @@ bool Position::EntersBoundary(double dlat, double dlon, double dist, bool *inc)
     t.dCrossingDistance = 0.;
     if (inc && *inc == true) {
         // XXX FIXME hack overload inclusion detection for saying:
-        // find any boundary not the closest.
+        // find any boundary not the c.
         t.dCrossingDistance = -1.;
     }
 
@@ -1078,13 +1097,12 @@ bool Position::EntersBoundary(double dlat, double dlon, double dist, bool *inc)
         //printf("%c", *inc?'=':'_');
     }
     //if (ret && t.dCrossingDistance != 0) printf("%f from %f %f d %f %d\n", t.dCrossingDistance , dlat, dlon, dist, inc?*inc:-1); 
-    ret = ret && (t.dCrossingDistance <= dist);
     return ret;
 }
 
 bool Position::EntersBoundary(double dlat, double dlon)
 {
-    return EntersBoundary(dlat, dlon, 100000., 0);
+    return EntersBoundary(dlat, dlon, 0);
 }
 
 SkipPosition::SkipPosition(Position *p, int q)
