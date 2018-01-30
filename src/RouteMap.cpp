@@ -787,7 +787,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         if(configuration.positive_longitudes && dlon < 0)
             dlon += 360;
 
-        if(configuration.MaxCourseAngle < 180) {
+        if(!configuration.slow_start && configuration.MaxCourseAngle < 180) {
             double bearing;
             // this is faster than gc distance, and actually works better in higher latitudes
             double d1 = dlat - configuration.StartLat, d2 = dlon - configuration.StartLon;
@@ -798,7 +798,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
                 continue;
         }
 
-        if(configuration.MaxDivertedCourse < 180) {
+        if(!configuration.slow_start && configuration.MaxDivertedCourse < 180) {
             double bearing, dist;
             double bearing1, dist1;
 
