@@ -2646,55 +2646,6 @@ void RouteMap::SetNewGrib(GribRecordSet *grib)
        !grib->m_GribRecordPtrArray[Idx_WIND_VY])
         return;
 
-    // XXX should be grib->m_ID in a newer OpenCPN version
-    unsigned int bogus_ID; // grib->m_ID
-
-    GribRecord *tmp = grib->m_GribRecordPtrArray[Idx_WIND_VX];
-    // RecordRefDate is time_t and high byte is likely the same in many grib files, add some entropy
-    bogus_ID = tmp->getRecordRefDate () ^ (tmp->getIdCenter() << 24) ^ (tmp->getNi() << 16);
-
-    {
-        std::map<time_t, Shared_GribRecordSetRef>::iterator it; 
-        wxMutexLocker lock(s_key_mutex);
-        it = grib_key.find(grib->m_Reference_Time);
-        if (it != grib_key.end() && it->second != 0 ) {
-            m_SharedNewGrib = *it->second;
-            m_NewGrib = m_SharedNewGrib.GetGribRecordSet();
-            // compute fake generation grib->m_ID
-            if (m_NewGrib->m_ID == bogus_ID) {
-                return;
-            }
-        }
-    }
-    /* copy the grib record set */
-    m_NewGrib = new WR_GribRecordSet(bogus_ID /* XXX */);
-    m_NewGrib->m_Reference_Time = grib->m_Reference_Time;
-    for(int i=0; i<Idx_COUNT; i++) {
-        switch (i) {
-        case Idx_HTSIGW:
-        case Idx_WIND_GUST:
-        case Idx_WIND_VX:
-        case Idx_WIND_VY:
-        case Idx_SEACURRENT_VX:
-        case Idx_SEACURRENT_VY:
-            if(grib->m_GribRecordPtrArray[i]) {
-                m_NewGrib->SetUnRefGribRecord(i, new GribRecord (*grib->m_GribRecordPtrArray[i]));
-            }
-            break;
-        default:
-            break;
-        }
-    }
-    m_SharedNewGrib.SetGribRecordSet(m_NewGrib);
-}
-
-void RouteMap::SetNewGrib(WR_GribRecordSet *grib)
-{
-    if(!grib ||
-       !grib->m_GribRecordPtrArray[Idx_WIND_VX] ||
-       !grib->m_GribRecordPtrArray[Idx_WIND_VY])
-        return;
-
     {
         std::map<time_t, Shared_GribRecordSetRef>::iterator it; 
         wxMutexLocker lock(s_key_mutex);
@@ -2727,6 +2678,7 @@ void RouteMap::SetNewGrib(WR_GribRecordSet *grib)
         }
     }
     m_SharedNewGrib.SetGribRecordSet(m_NewGrib);
+
 }
 
 void RouteMap::GetStatistics(int &isochrons, int &routes, int &invroutes, int &skippositions, int &positions)

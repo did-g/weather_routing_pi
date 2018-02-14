@@ -149,47 +149,7 @@ public:
 };
 
 // -----------------
-class WR_GribRecordSet {
-public:
-    WR_GribRecordSet(unsigned int id) : m_Reference_Time(-1), m_ID(id) {
-        for(int i=0; i<Idx_COUNT; i++) {
-            m_GribRecordPtrArray[i] = 0;
-            m_GribRecordUnref[i] = false;
-        }
-    }
-
-    virtual ~WR_GribRecordSet()
-    {
-         RemoveGribRecords();
-    }
-
-    /* copy and paste by plugins, keep functions in header */
-    void SetUnRefGribRecord(int i, GribRecord *pGR ) { 
-        assert (i >= 0 && i < Idx_COUNT);
-        if (m_GribRecordUnref[i] == true) {
-            delete m_GribRecordPtrArray[i];
-        }
-        m_GribRecordPtrArray[i] = pGR;
-        m_GribRecordUnref[i] = true;
-    }
-
-    void RemoveGribRecords( ) { 
-        for(int i=0; i<Idx_COUNT; i++) {
-            if (m_GribRecordUnref[i] == true) {
-                delete m_GribRecordPtrArray[i];
-            }
-        }
-    }
-
-    time_t m_Reference_Time;
-    unsigned int m_ID;
-
-    GribRecord *m_GribRecordPtrArray[Idx_COUNT];
-private:
-    // grib records files are stored and owned by reader mapGribRecords
-    // interpolated grib are not, keep track of them
-    bool        m_GribRecordUnref[Idx_COUNT];
-};
+typedef GribRecordSet WR_GribRecordSet;
 
 // ------
 class Shared_GribRecordSetData: public wxRefCounter
@@ -362,7 +322,6 @@ public:
     bool NeedsGrib() { Lock(); bool needsgrib = m_bNeedsGrib; Unlock(); return needsgrib; }
     void RequestedGrib() { Lock(); m_bNeedsGrib=false; Unlock(); }
     void SetNewGrib(GribRecordSet *grib);
-    void SetNewGrib(WR_GribRecordSet *grib);
     wxDateTime NewTime() { Lock(); wxDateTime time =  m_NewTime; Unlock(); return time; }
     wxDateTime StartTime() { Lock(); wxDateTime time = m_Configuration.StartTime;
         Unlock(); return time; }
