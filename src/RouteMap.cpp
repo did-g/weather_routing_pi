@@ -867,15 +867,14 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
             /* Boundary test */
             if(configuration.DetectBoundary) {
                 bool inc = false;
-                if (dist *2.5 >= dist2end) {
+                if (dist *3 >= dist2end) {
                     if (!configuration.slow_end) {
                         // printf("enter slow end! %f %f\n", dist, dist2end);
                         configuration.slow_end = true;
                     }
+                    configuration.closing = true;
                 }
                 else {
-                    if ((dist *3) * configuration.slow_step > dist2end)
-                        moving_away = false;
                     // XXX hack resquest any crossing not the closest
                     inc = true;
                 }
@@ -2575,6 +2574,9 @@ bool RouteMap::Propagate()
     }
 
     //
+    // 
+    bool prev_closing = m_Configuration.closing;
+    m_Configuration.closing = false;
     RouteMapConfiguration configuration = m_Configuration;
     configuration.polar_failed = false;
     configuration.wind_data_failed = false;
@@ -2604,11 +2606,11 @@ bool RouteMap::Propagate()
 
     // request the next grib
     // in a different thread (grib record averaging going in parallel)
-    delta = 60.;
+    delta = 120.;
     if(origin.empty() && configuration.DeltaTime > delta && (configuration.DetectBoundary || configuration.DetectLand)) {
         // for starting need a successfull propagate, which means 3 points.
         m_Configuration.slow_start = true;
-        m_Configuration.slow_step = wxMin(trunc(configuration.DeltaTime/delta), 10);
+        m_Configuration.slow_step = wxMax(1, wxMin(trunc(configuration.DeltaTime/delta), 5));
         m_Configuration.cur_step = 1;
     }
     else if (m_Configuration.slow_start == true) {
@@ -2623,15 +2625,26 @@ bool RouteMap::Propagate()
                 delta += m_Configuration.DeltaTime;
         }
     }
-    else if (m_Configuration.slow_end && configuration.DeltaTime > delta) {
-        m_Configuration.slow_step++;
-        delta = configuration.DeltaTime / m_Configuration.slow_step;
-        // printf("break %f\n", delta);
-        if (delta < 120) {
-            delta = 120.;
-            m_Configuration.slow_step--;
-            m_Configuration.slow_step =wxMax(m_Configuration.slow_step, 1);            
-
+    else if (m_Configuration.slow_end) {
+        //printf ("%d %d === \n", prev_closing, m_Configuration.slow_step);
+        if (configuration.DeltaTime > delta) {
+            if (prev_closing) {
+                m_Configuration.slow_step++;
+            }
+            else {
+                m_Configuration.slow_step--;
+                m_Configuration.slow_step =wxMax(m_Configuration.slow_step, 1);
+            }
+            delta = configuration.DeltaTime / m_Configuration.slow_step;
+            // printf("break %f\n", delta);
+            if (delta < 120.) {
+                delta = 120.;
+                m_Configuration.slow_step--;
+                m_Configuration.slow_step =wxMax(m_Configuration.slow_step, 1);
+            }
+        }
+        else {
+            delta = configuration.DeltaTime;
         }
     }
     else {
@@ -2708,6 +2721,7 @@ bool RouteMap::Propagate()
         m_bLandCrossing = true;
 
     m_Configuration.slow_end = configuration.slow_end;
+    m_Configuration.closing = configuration.closing;
     Unlock();
 
     return true;
@@ -2782,6 +2796,7 @@ void RouteMap::Reset()
     m_bLandCrossing = false;
     m_bBoundaryCrossing = false;
     m_Configuration.slow_end = false;
+    m_Configuration.closing = false;
     m_Configuration.slow_start = false;
     Unlock();
 }

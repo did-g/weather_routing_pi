@@ -263,6 +263,7 @@ struct RouteMapConfiguration {
     double UsedDeltaTime; /* time in seconds between propagations */
     bool slow_start;
     bool slow_end;
+    bool closing;
 
     int  slow_step;
     int  cur_step;
