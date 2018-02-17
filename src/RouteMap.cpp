@@ -845,6 +845,13 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
                     ndlon1 -360;
                 }
                 if (CrossesLand(dlat1, ndlon1)) {
+                    if (dist *3 >= dist2end) {
+                        if (!configuration.slow_end) {
+                            // printf("enter slow end! %f %f\n", dist, dist2end);
+                            configuration.slow_end = true;
+                        }
+                        configuration.closing = true;
+                    }
                     if (!second_pass) {
                         cnt--;
                         l1:
@@ -867,19 +874,20 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
             /* Boundary test */
             if(configuration.DetectBoundary) {
                 bool inc = false;
-                if (dist *3 >= dist2end) {
-                    if (!configuration.slow_end) {
-                        // printf("enter slow end! %f %f\n", dist, dist2end);
-                        configuration.slow_end = true;
-                    }
-                    configuration.closing = true;
-                }
-                else {
+                if (dist *3 < dist2end) {
+                    // unlikely we'd reach destination in the next 3 loop
                     // XXX hack resquest any crossing not the closest
                     inc = true;
                 }
 
                 if (EntersBoundary(dlat1, dlon1, &inc )) {
+                    if (dist *3 >= dist2end) {
+                        if (!configuration.slow_end) {
+                            // printf("enter slow end! %f %f\n", dist, dist2end);
+                            configuration.slow_end = true;
+                        }
+                        configuration.closing = true;
+                    }
                     // entersBoundary set inc to true if boundary type is inclusive
                     if (!second_pass && (fine_search || !inc )) {
                         // printf(".");
