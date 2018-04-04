@@ -1307,7 +1307,7 @@ std::list<PlotData> &RouteMapOverlay::GetPlotData(bool cursor_route)
 
             configuration.UsedDeltaTime = (*it)->delta;
             // XXX
-            configuration.UsedDeltaTime = (*itp)->delta;
+            //configuration.UsedDeltaTime = (*itp)->delta;
             PlotData data;
 
             double dt = configuration.UsedDeltaTime;
