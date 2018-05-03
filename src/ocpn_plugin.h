@@ -43,6 +43,8 @@
 #include "wxsvg/include/wxSVG/svg.h"
 #endif // ocpnUSE_SVG
 
+#include <memory>
+
 class wxGLContext;
 
 //    This is the most modern API Version number
@@ -50,7 +52,7 @@ class wxGLContext;
 //    PlugIns conforming to API Version less then the most modern will also
 //    be correctly supported.
 #define API_VERSION_MAJOR           1
-#define API_VERSION_MINOR           14
+#define API_VERSION_MINOR           16
 
 //    Fwd Definitions
 class       wxFileConfig;
@@ -524,6 +526,14 @@ public:
 
 };
 
+class DECL_EXP opencpn_plugin_115 : public opencpn_plugin_114
+{
+public:
+    opencpn_plugin_115(void *pmgr);
+    virtual ~opencpn_plugin_115();
+
+};
+
 //------------------------------------------------------------------
 //      Route and Waypoint PlugIn support
 //
@@ -763,13 +773,16 @@ extern  DECL_EXP wxString GetLocaleCanonicalName();
 
 
 class PI_S57Obj;
-
 WX_DECLARE_LIST(PI_S57Obj, ListOfPI_S57Obj);
+
+class PI_ChartObj;
+WX_DECLARE_LIST(PI_ChartObj, ListOfPI_ChartObj);
 
 // ----------------------------------------------------------------------------
 // PlugInChartBaseGL
 //  Derived from PlugInChartBase, add OpenGL Vector chart support
 // ----------------------------------------------------------------------------
+class ListOfS57ObjRegion;
 
 class DECL_EXP PlugInChartBaseGL : public PlugInChartBase
 {
@@ -823,6 +836,7 @@ public:
     virtual float *GetNoCOVRTableHead(int iTable);
     
     virtual void ClearPLIBTextList();
+    virtual ListOfS57ObjRegion *GetHazards(const void *region, ListOfS57ObjRegion  *lst = 0);
     
 };
 
@@ -1066,6 +1080,7 @@ extern DECL_EXP void ForceChartDBUpdate();
 extern  DECL_EXP wxString GetWritableDocumentsDir( void );
 extern  DECL_EXP wxDialog *GetActiveOptionsDialog();
 extern  DECL_EXP wxArrayString GetWaypointGUIDArray( void );
+extern  DECL_EXP wxArrayString GetIconNameArray(void);
 
 extern  DECL_EXP bool AddPersistentFontKey(wxString TextElement);
 extern  DECL_EXP wxString GetActiveStyleName();
@@ -1213,8 +1228,98 @@ extern WXDLLIMPEXP_CORE const wxEventType wxEVT_DOWNLOAD_EVENT;
 // API 1.14 Extra canvas Support
 
 /* Allow drawing of objects onto other OpenGL canvases */
-extern void PlugInAISDrawGL( wxGLCanvas* glcanvas, const PlugIn_ViewPort& vp );
-extern wxColour PlugInGetFontColor(const wxString TextElement);
-extern bool PlugInSetFontColor(const wxString TextElement, const wxColour color);
+extern DECL_EXP void PlugInAISDrawGL( wxGLCanvas* glcanvas, const PlugIn_ViewPort& vp );
+extern DECL_EXP bool PlugInSetFontColor(const wxString TextElement, const wxColour color);
+
+// API 1.15
+extern DECL_EXP double PlugInGetDisplaySizeMM();
+
+// 
+extern DECL_EXP wxFont* FindOrCreateFont_PlugIn( int point_size, wxFontFamily family, 
+                    wxFontStyle style, wxFontWeight weight, bool underline = false,
+                    const wxString &facename = wxEmptyString,
+                    wxFontEncoding encoding = wxFONTENCODING_DEFAULT );
+
+extern DECL_EXP int PlugInGetMinAvailableGshhgQuality();
+extern DECL_EXP int PlugInGetMaxAvailableGshhgQuality();
+
+// API 1.16 Extra objects handling. 
+extern DECL_EXP void PlugInHandleAutopilotRoute(bool enable);
+
+extern "C"  DECL_EXP  int AddCanvasMenuItem(wxMenuItem *pitem, opencpn_plugin *pplugin, const char *name = "");
+extern "C"  DECL_EXP void RemoveCanvasMenuItem(int item, const char *name = "");      // Fully remove this item
+extern "C"  DECL_EXP void SetCanvasMenuItemViz(int item, bool viz, const char *name = ""); // Temporarily change context menu options
+extern "C"  DECL_EXP void SetCanvasMenuItemGrey(int item, bool grey, const char *name = "");
+
+// Extra waypoints, routes and tracks
+extern DECL_EXP wxString GetSelectedWaypointGUID_Plugin(  );
+extern DECL_EXP wxString GetSelectedRouteGUID_Plugin( );
+extern DECL_EXP wxString GetSelectedTrackGUID_Plugin( );
+
+extern DECL_EXP std::unique_ptr<PlugIn_Waypoint> GetWaypoint_Plugin( const wxString& ); // doublon with GetSingleWaypoint
+extern DECL_EXP std::unique_ptr<PlugIn_Route> GetRoute_Plugin( const wxString& );
+extern DECL_EXP std::unique_ptr<PlugIn_Track> GetTrack_Plugin( const wxString& );
+
+// chart file vfs plugin.
+class DECL_EXP PI_ChartObj
+{
+public:
+
+      //  Public Methods
+      PI_ChartObj() {};
+      ~PI_ChartObj() {};
+
+public:
+      // Instance Data
+      char                    FeatureName[8];
+      int                     Primitive_type;
+      int		      n_points;
+      double		      *region;
+
+      char                    *att_array;
+      int                     n_attr;
+
+      int                     iOBJL;
+      int                     Index;
+
+      double                  x;                      // for POINT
+      double                  y;
+      double                  z;
+      int                     npt;                    // number of points as needed by arrays
+      void                    *geoPt;                 // for LINE & AREA not described by PolyTessGeo
+      double                  *geoPtz;                // an array[3] for MultiPoint, SM with Z, i.e. depth
+      double                  *geoPtMulti;            // an array[2] for MultiPoint, lat/lon to make bbox
+                                                      // of decomposed points
+
+      void                    *pPolyTessGeo;
+
+      double                  m_lat;                  // The lat/lon of the object's "reference" point
+      double                  m_lon;
+
+      int                     Scamin;                 // SCAMIN attribute decoded during load
+
+      bool                    bIsClone;
+      int                     nRef;                   // Reference counter, to signal OK for deletion
+
+      bool                    bIsAton;                // This object is an aid-to-navigation
+      bool                    bIsAssociable;          // This object is DRGARE or DEPARE
+
+      int                     m_n_lsindex;
+      int                     *m_lsindex_array;
+      int                     m_n_edge_max_points;
+      void                    *m_chart_context;
+
+      PI_DisCat               m_DisplayCat;
+
+      void *                  S52_Context;
+
+      PI_line_segment_element *m_ls_list;
+      bool                    m_bcategory_mutable;
+      int                     m_DPRI;
+};
+
+extern DECL_EXP ListOfPI_ChartObj *GetHazards(const PlugIn_ViewPort &vp );
+extern DECL_EXP ListOfPI_ChartObj *GetHazards(size_t n, double *points );
+extern DECL_EXP ListOfPI_ChartObj *GetSafeWaterAreas(const PlugIn_ViewPort &vp );
 
 #endif //_PLUGIN_H_
