@@ -1881,8 +1881,7 @@ void WeatherRouting::SaveXML(wxString filename)
         root->LinkEndChild(c);
     }
 
-    for(std::list<WeatherRoute*>::iterator it = m_WeatherRoutes.begin();
-        it != m_WeatherRoutes.end(); it++) {
+    for(auto it = m_WeatherRoutes.begin();it != m_WeatherRoutes.end(); it++) {
         TiXmlElement *c = new TiXmlElement( "Configuration" );
 
         RouteMapConfiguration configuration =
