@@ -764,7 +764,7 @@ void RouteMapOverlay::RenderWindBarbsOnRoute(piDC &dc, PlugIn_ViewPort &vp, int 
     if (plot.empty())
         return;
 
-    for ( std::list<PlotData>::iterator it = plot.begin(); it != plot.end(); it++)
+    for (auto it = plot.begin(); it != plot.end(); it++)
     {
         wxPoint p;
         GetCanvasPixLL(&nvp, &p, it->lat, it->lon);
