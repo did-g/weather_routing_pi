@@ -34,6 +34,9 @@
 #include "WeatherRouting.h"
 #include "weather_routing_pi.h"
 
+wxJSONValue g_ReceivedJSONMsg;
+wxString    g_ReceivedMessage;
+
 // Define minimum and maximum versions of the grib plugin supported
 #define GRIB_MAX_MAJOR 4
 #define GRIB_MAX_MINOR 1
@@ -220,7 +223,20 @@ void weather_routing_pi::SetCursorLatLon(double lat, double lon)
 
 void weather_routing_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 {
-    if(message_id == _T("GRIB_TIMELINE"))
+    if(message_id == _T("GRIB_VALUES"))
+    {
+        wxJSONValue  root;
+        wxJSONReader reader;
+        //wxString    sLogMessage;
+        int numErrors = reader.Parse( message_body, &root );
+        if ( numErrors > 0 )  {
+        }
+        else {
+            g_ReceivedJSONMsg = root;
+            g_ReceivedMessage = message_body;
+        }
+    }
+    else if(message_id == _T("GRIB_TIMELINE"))
     {
         wxJSONReader r;
         wxJSONValue v;
@@ -240,7 +256,7 @@ void weather_routing_pi::SetPluginMessage(wxString &message_id, wxString &messag
             }
         }
     }
-    if(message_id == _T("GRIB_TIMELINE_RECORD"))
+    else if(message_id == _T("GRIB_TIMELINE_RECORD"))
     {
         wxJSONReader r;
         wxJSONValue v;
@@ -283,7 +299,7 @@ void weather_routing_pi::SetPluginMessage(wxString &message_id, wxString &messag
             }
         }
     }
-    if(message_id == _T("CLIMATOLOGY"))
+    else if(message_id == _T("CLIMATOLOGY"))
     {
         if(!m_pWeather_Routing)
             return; /* not ready */
@@ -330,9 +346,7 @@ void weather_routing_pi::SetPluginMessage(wxString &message_id, wxString &messag
                 (RouteMap::ClimatologyCycloneTrackCrossings!=NULL);
         }
     }
-
-
-    if(message_id == wxS("WEATHER_ROUTING_PI")) {
+    else if(message_id == wxS("WEATHER_ROUTING_PI")) {
         // construct the JSON root object
         wxJSONValue  root;
         // construct a JSON parser
