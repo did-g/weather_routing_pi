@@ -390,17 +390,17 @@ static inline int TestIntersectionXY(double x1, double y1, double x2, double y2,
 #define EPSILON (2e-11)
 Position::Position(double latitude, double longitude, Position *p,
                    double pheading, double pbearing, int sp, int t, int dm)
-    : RoutePoint(latitude, longitude, t), parent_heading(pheading), parent_bearing(pbearing),
-      polar(sp), parent(p), propagated(false), copied(false), data_mask(dm)
+    : RoutePoint(latitude, longitude, sp, t), parent_heading(pheading),
+      parent_bearing(pbearing), parent(p), propagated(false), copied(false), data_mask(dm)
 {
     lat -= fmod(lat, EPSILON);
     lon -= fmod(lon, EPSILON);
 }
 
 Position::Position(Position *p)
-    : RoutePoint(p->lat, p->lon, p->tacks), parent_heading(p->parent_heading), 
-      parent_bearing(p->parent_bearing), polar(p->polar), 
-      parent(p->parent), propagated(p->propagated), copied(true), data_mask(p->data_mask)
+    : RoutePoint(p->lat, p->lon, p->polar, p->tacks), parent_heading(p->parent_heading),
+      parent_bearing(p->parent_bearing), parent(p->parent),
+      propagated(p->propagated), copied(true), data_mask(p->data_mask)
 {
 }
 
@@ -703,7 +703,13 @@ bool rk_step(Position *p, double timeseconds, double BG, double dist, double H,
     return true;
 }
 
-void DeletePoints(Position *point)
+/* propagate to the end position in the configuration, and return the number of seconds it takes */
+double Position::PropagateToEnd(RouteMapConfiguration &cf, double &H, int &data_mask)
+{
+    return PropagateToPoint(cf.EndLat, cf.EndLon, cf, H, data_mask, true);
+}
+
+static void DeletePoints(Position *point)
 {
     Position *p = point;
     do {
@@ -1080,8 +1086,8 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
     return true;
 }
 
-/* propagate to the end position in the configuration, and return the number of seconds it takes */
-double Position::PropagateToEnd(RouteMapConfiguration &configuration, double &H, int &data_mask)
+double RoutePoint::PropagateToPoint(double dlat, double dlon, RouteMapConfiguration &configuration,
+                             double &H, int &data_mask, bool end)
 {
     double S = Swell(configuration, lat, lon);
     if(S > configuration.MaxSwellMeters)
@@ -1102,7 +1108,7 @@ double Position::PropagateToEnd(RouteMapConfiguration &configuration, double &H,
     /* todo: we should make sure we don't tack if we are already at the max tacks,
        possibly perform other tests and/or switch sail polar? */
     double bearing, dist;
-    ll_gc_ll_reverse(lat, lon, configuration.EndLat, configuration.EndLon, &bearing, &dist);
+    ll_gc_ll_reverse(lat, lon, dlat, dlon, &bearing, &dist);
 
     /* figure out bearing and distance to go, because it is a non-linear problem if compounded
        with currents solve iteratively (without currents only one iteration will ever occur */
@@ -1110,7 +1116,8 @@ double Position::PropagateToEnd(RouteMapConfiguration &configuration, double &H,
     int iters = 0;
     H = 0;
     bool old = configuration.OptimizeTacking;
-    configuration.OptimizeTacking = true;
+    if (end)
+        configuration.OptimizeTacking = true;
     do {
         /* make our correction in range */
         while(bearing - BG > 180)
@@ -1129,7 +1136,7 @@ double Position::PropagateToEnd(RouteMapConfiguration &configuration, double &H,
             configuration.OptimizeTacking = old;
             return NAN;
         }
-        
+
         if(!ComputeBoatSpeed(configuration, 0, WG, VWG, W, VW, C, VC, H, atlas, data_mask,
                              B, VB, BG, VBG, dummy_dist, newpolar)
                 || ++iters == 10 // give up
@@ -1144,23 +1151,20 @@ double Position::PropagateToEnd(RouteMapConfiguration &configuration, double &H,
        the maximum boat speed once, and using that before computing boat speed for
        this angle, but for now, we don't worry because propagating to the end is a
        small amount of total computation */
-    if(dist / VBG > configuration.UsedDeltaTime / 3600.0)
+    if(end && dist / VBG > configuration.UsedDeltaTime / 3600.0)
         return NAN;
-    
+
     /* quick test first to avoid slower calculation */
     if(VB + VW > configuration.MaxApparentWindKnots &&
        Polar::VelocityApparentWind(VB, H, VW) > configuration.MaxApparentWindKnots)
         return NAN;
 
-#if 1
     /* landfall test if we are within 60 miles (otherwise it's very slow) */
-    if(configuration.DetectLand && dist < 60
-       && CrossesLand(configuration.EndLat, configuration.EndLon))
+    if(configuration.DetectLand && dist < 60 && CrossesLand(dlat, dlon))
         return NAN;
-#endif
 
     /* Boundary test */
-    if(configuration.DetectBoundary && EntersBoundary(configuration.EndLat, configuration.EndLon))
+    if(configuration.DetectBoundary && EntersBoundary(dlat, dlon))
         return NAN;
 
     /* crosses cyclone track(s)? */
@@ -1183,7 +1187,7 @@ double Position::Distance(Position *p)
     return DistGreatCircle(lat, lon, p->lat, p->lon);
 }
 
-bool Position::CrossesLand(double dlat, double dlon)
+bool RoutePoint::CrossesLand(double dlat, double dlon)
 {
     return PlugIn_GSHHS_CrossesLand(lat, lon, dlat, dlon);
 }
@@ -1196,7 +1200,7 @@ int Position::SailChanges()
     return (polar != parent->polar) + parent->SailChanges();
 }
 
-bool Position::EntersBoundary(double dlat, double dlon, bool *inc)
+bool RoutePoint::EntersBoundary(double dlat, double dlon, bool *inc)
 {
     struct FindClosestBoundaryLineCrossing_t t;
     t.dStartLat = lat; 
@@ -1222,7 +1226,7 @@ bool Position::EntersBoundary(double dlat, double dlon, bool *inc)
     return ret;
 }
 
-bool Position::EntersBoundary(double dlat, double dlon)
+bool RoutePoint::EntersBoundary(double dlat, double dlon)
 {
     return EntersBoundary(dlat, dlon, 0);
 }
