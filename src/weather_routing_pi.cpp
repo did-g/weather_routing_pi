@@ -469,7 +469,7 @@ void weather_routing_pi::OnContextMenuItemCallback(int id)
         if (rte.get() == nullptr)
            return;
 
-        //m_pWeather_Routing->AnalyseRoute(rte);
+        m_pWeather_Routing->AddRoute(rte);
     }
     m_pWeather_Routing->Reset();
 }

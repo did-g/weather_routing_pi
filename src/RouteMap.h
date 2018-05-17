@@ -419,6 +419,14 @@ public:
     }
 
 protected:
+
+    void SetFinish() {
+       Lock();
+       m_bReachedDestination = true;
+       m_bFinished = true;
+       Unlock();
+    }
+
     virtual void Clear();
     bool ReduceList(IsoRouteList &merged, IsoRouteList &routelist, RouteMapConfiguration &configuration);
     Position *ClosestPosition(double lat, double lon, wxDateTime *t=0, double *dist=0);
