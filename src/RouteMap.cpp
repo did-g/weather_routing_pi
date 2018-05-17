@@ -72,8 +72,6 @@
 #include <math.h>
 #include <map>
 
-#include "ocpn_plugin.h"
-
 #include "Utilities.h"
 #include "Boat.h"
 #include "RouteMap.h"
@@ -781,7 +779,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
     //  1234  6789
     // 0          10
 
-    for(std::list<double>::iterator it = configuration.DegreeSteps.begin();
+    for(auto it = configuration.DegreeSteps.begin();
         it != configuration.DegreeSteps.end(); it++, prev_deg = mid_deg) {
 
         double degrees = (*it);
@@ -2621,17 +2619,21 @@ bool RouteMapConfiguration::Update()
     ll_gc_ll_reverse(StartLat, StartLon, EndLat, EndLon, &StartEndBearing, 0);
 
     DegreeSteps.clear();
-
-    // ensure validity
-    FromDegree = wxMax(wxMin(FromDegree, 180), 0);
-    ToDegree = wxMax(wxMin(ToDegree, 180), 0);
-    if(FromDegree > ToDegree) FromDegree = ToDegree;
-    ByDegrees = wxMax(wxMin(ByDegrees, 60), .1);
+    if (RouteGUID.IsEmpty()) {
+        // ensure validity
+        FromDegree = wxMax(wxMin(FromDegree, 180), 0);
+        ToDegree = wxMax(wxMin(ToDegree, 180), 0);
+        if(FromDegree > ToDegree) FromDegree = ToDegree;
+        ByDegrees = wxMax(wxMin(ByDegrees, 60), .1);
     
-    for(double step=FromDegree; step <= ToDegree; step += ByDegrees) {
-        DegreeSteps.push_back(step);
-        if(step > 0 && step < 180)
-            DegreeSteps.push_back(360-step);
+        for(double step=FromDegree; step <= ToDegree; step += ByDegrees) {
+            DegreeSteps.push_back(step);
+            if(step > 0 && step < 180)
+                DegreeSteps.push_back(360-step);
+        }
+    }
+    else {
+        DegreeSteps.push_back(0.);
     }
     DegreeSteps.sort();
 
@@ -2728,10 +2730,10 @@ bool RouteMap::Propagate()
     bool grib_is_data_deficient = false;
         
     if(m_Configuration.AllowDataDeficient &&
-       (!m_NewGrib ||
-        !m_NewGrib->m_GribRecordPtrArray[Idx_WIND_VX] ||
-        !m_NewGrib->m_GribRecordPtrArray[Idx_WIND_VY]) &&
-       origin.size() &&
+        ( !m_NewGrib ||
+          !m_NewGrib->m_GribRecordPtrArray[Idx_WIND_VX] ||
+          !m_NewGrib->m_GribRecordPtrArray[Idx_WIND_VY]
+        ) && origin.size() &&
        /*m_Configuration.ClimatologyType <= RouteMapConfiguration::CURRENTS_ONLY &&*/
        m_Configuration.UseGrib) {
         SetNewGrib(origin.back()->m_Grib);
@@ -2744,11 +2746,11 @@ bool RouteMap::Propagate()
 
     m_NewGrib = 0;
     m_SharedNewGrib.SetGribRecordSet(0);
-
+    bool route = !m_Configuration.RouteGUID.IsEmpty();
     // request the next grib
     // in a different thread (grib record averaging going in parallel)
     delta = 120.;
-    if(origin.empty() && configuration.DeltaTime > delta && (configuration.DetectBoundary || configuration.DetectLand)) {
+    if(origin.empty() && !route && configuration.DeltaTime > delta && (configuration.DetectBoundary || configuration.DetectLand)) {
         // for starting need a successfull propagate, which means 3 points.
         m_Configuration.slow_start = true;
         m_Configuration.slow_step = wxMax(1, wxMin(trunc(configuration.DeltaTime/delta), 5));
@@ -2926,7 +2928,7 @@ void RouteMap::Reset()
     m_SharedNewGrib.SetGribRecordSet(0);
     
     m_NewTime = m_Configuration.StartTime;
-    m_bNeedsGrib = m_Configuration.UseGrib;
+    m_bNeedsGrib = m_Configuration.UseGrib && m_Configuration.RouteGUID.IsEmpty();
     m_ErrorMsg = wxEmptyString;
 
     m_bReachedDestination = false;

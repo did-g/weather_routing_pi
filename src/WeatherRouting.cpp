@@ -623,6 +623,56 @@ void WeatherRouting::AddPosition(double lat, double lon, wxString name, wxString
     m_ConfigurationBatchDialog.AddSource(name);
 }
 
+void WeatherRouting::AddRoute(std::unique_ptr<PlugIn_Route> &rte)
+{
+    PlugIn_Route *proute = rte.get();
+    if (!proute)
+        return;
+
+    PlugIn_Waypoint *pwp;
+    wxPlugin_WaypointListNode *pwpnode = proute->pWaypointList->GetFirst();
+    if (!pwpnode)
+        return;
+
+    RouteMapConfiguration configuration;
+    if(FirstCurrentRouteMap())
+        configuration = FirstCurrentRouteMap()->GetConfiguration();
+    else
+        configuration = DefaultConfiguration();
+
+    configuration.RouteGUID = proute->m_GUID;
+
+    pwp = pwpnode->GetData();
+    AddPosition(pwp->m_lat, pwp->m_lon, pwp->m_MarkName, pwp->m_GUID);
+    configuration.Start = pwp->m_MarkName;
+    configuration.StartLat = pwp->m_lat, configuration.StartLon = pwp->m_lon;
+
+    configuration.StartTime = wxDateTime::Now();
+    configuration.DeltaTime = 3600;
+
+    while( pwpnode->GetNext()) {
+        pwpnode = pwpnode->GetNext();
+    }
+
+    pwp = pwpnode->GetData();
+    AddPosition(pwp->m_lat, pwp->m_lon, pwp->m_MarkName, pwp->m_GUID);
+    configuration.End = pwp->m_MarkName;
+    configuration.EndLat = pwp->m_lat, configuration.EndLon = pwp->m_lon;
+
+    AddConfiguration(configuration);
+#if 0
+    for(int i=0; i<m_panel->m_lWeatherRoutes->GetItemCount(); i++) {
+        WeatherRoute *weatherroute =
+            reinterpret_cast<WeatherRoute*>(wxUIntToPtr(m_panel->m_lWeatherRoutes->GetItemData(i)));
+        if(weatherroute->routemapoverlay->m_bEndRouteVisible)
+            weatherroute->routemapoverlay->Render(time, m_SettingsDialog, dc, vp, true);
+    }
+#endif
+    if (!IsShown()) 
+        Show(true);
+
+}
+
 void WeatherRouting::CursorRouteChanged()
 {
     if(m_PlotDialog.IsShown() && m_PlotDialog.m_rbCursorRoute->GetValue())
@@ -1218,8 +1268,7 @@ void WeatherRouting::UpdateComputeState()
 void WeatherRouting::OnCompute( wxCommandEvent& event )
 {
     std::list<RouteMapOverlay*> currentroutemaps = CurrentRouteMaps();
-    for(std::list<RouteMapOverlay*>::iterator it = currentroutemaps.begin();
-        it != currentroutemaps.end(); it++)
+    for(auto it = currentroutemaps.begin();it != currentroutemaps.end(); it++)
         Start(*it);
     UpdateComputeState();
 }
