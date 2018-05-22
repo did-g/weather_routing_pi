@@ -731,6 +731,24 @@ void RouteMapOverlay::RenderCourse(bool cursor_route, piDC &dc, PlugIn_ViewPort 
 
     Lock();
 
+    bool rte = !GetConfiguration().RouteGUID.IsEmpty();
+    if (cursor_route == true) {
+        // never draw comfort if cursor route
+        assert(comfortRoute == false);
+        if (!rte) {
+            if(!dc.GetDC())
+                glBegin(GL_LINES);
+
+            for(Position *p = pos; p && p->parent; p = p->parent)
+                DrawLine(p, p->parent, dc, vp);
+
+            if(!dc.GetDC())
+                glEnd();
+        }
+        Unlock();
+        return;
+    }
+
     /* ComfortDisplay Customization
      * ------------------------------------------------
      * To get weather data (wind, current, waves) on a
@@ -750,15 +768,13 @@ void RouteMapOverlay::RenderCourse(bool cursor_route, piDC &dc, PlugIn_ViewPort 
     Lock();
     wxColor lc = sailingConditionColor(sailingConditionLevel(*itt));
 
-    bool rte = !GetConfiguration().RouteGUID.IsEmpty();
-
     /* draw lines to this route */
 #ifndef __OCPN__ANDROID__
     if(!dc.GetDC())
         glBegin(GL_LINES);
 #endif
 
-    if (rte) for(; itt != plot.rend(); inext = itt, itt++)
+    for(; itt != plot.rend(); inext = itt, itt++)
     {
         if (comfortRoute)
         {
@@ -768,18 +784,6 @@ void RouteMapOverlay::RenderCourse(bool cursor_route, piDC &dc, PlugIn_ViewPort 
         } 
         else 
             DrawLine(&(*itt), &(*inext), dc, vp);
-    }
-    else for(Position *p = pos; (p && p->parent) && (itt != plot.rend()); p = p->parent)
-    {
-        if (comfortRoute)
-        {
-            wxColor c = sailingConditionColor(sailingConditionLevel(*itt));
-            DrawLine(p, lc, p->parent, c, dc, vp);
-            itt++;
-            lc = c;
-        } 
-        else 
-            DrawLine(p, p->parent, dc, vp);
     }
 
 #ifndef __OCPN__ANDROID__
