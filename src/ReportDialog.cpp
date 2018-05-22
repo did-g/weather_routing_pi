@@ -67,41 +67,40 @@ void ReportDialog::SetRouteMapOverlays(std::list<RouteMapOverlay*> routemapoverl
     }
 
     wxString page;
-    for(std::list<RouteMapOverlay *>::iterator it = routemapoverlays.begin();
-        it != routemapoverlays.end(); it++) {
+    for(auto it : routemapoverlays) {
 
         page += _T("<p>");
-        if(!(*it)->ReachedDestination() ) {
+        if(!it->ReachedDestination() ) {
             m_htmlConfigurationReport->SetPage(_("Destination not yet reached."));
             continue;
         }
 
-        RouteMapConfiguration c = (*it)->GetConfiguration();
-        Position *d = (*it)->GetDestination();
+        RouteMapConfiguration c = it->GetConfiguration();
+        Position *d = it->GetDestination();
 
         page += _("Boat Filename") + _T(" ") + wxFileName(c.boatFileName).GetName() + _T("<dt>");
         page += _("Route from ") + c.Start + _(" to ") + c.End + _T("<dt>");
-        page += _("Leaving ") + FormatTime((*it)->StartTime()) + _T("<dt>");
+        page += _("Leaving ") + FormatTime(it->StartTime()) + _T("<dt>");
         if (d) {
-            page += _("Arriving ") + FormatTime((*it)->EndTime()) + _T("<dt>");
-            page += _("Duration ") + ((*it)->EndTime() - (*it)->StartTime()).Format() + _T("<dt>");
+            page += _("Arriving ") + FormatTime(it->EndTime()) + _T("<dt>");
+            page += _("Duration ") + (it->EndTime() - it->StartTime()).Format() + _T("<dt>");
         }
         page += _T("<p>");
         double distance = DistGreatCircle_Plugin(c.StartLat, c.StartLon, c.EndLat, c.EndLon);
-        double distance_sailed = (*it)->RouteInfo(RouteMapOverlay::DISTANCE);
+        double distance_sailed = it->RouteInfo(RouteMapOverlay::DISTANCE);
         page += _("Distance sailed: ") + wxString::Format
             (_T("%.2f NMi : %.2f NMi or %.2f%% "), distance_sailed,
              distance_sailed - distance, (distance_sailed / distance - 1) * 100.0) +
             _("longer than great circle route") + _T("<br>");
 
-        double avgspeed = (*it)->RouteInfo(RouteMapOverlay::AVGSPEED);
-        double avgspeedground = (*it)->RouteInfo(RouteMapOverlay::AVGSPEEDGROUND);
+        double avgspeed = it->RouteInfo(RouteMapOverlay::AVGSPEED);
+        double avgspeedground = it->RouteInfo(RouteMapOverlay::AVGSPEEDGROUND);
         page += _("Average Speed Over Water (SOW)") + wxString(_T(": ")) + wxString::Format
             (_T(" %.2f"), avgspeed) + _T(" ") + _("knots") + _T("<dt>");
         page += _("Average Speed Over Ground (SOG)") + wxString(_T(": ")) + wxString::Format
             (_T(" %.2f"), avgspeedground) + _T(" ") + _("knots") + _T("<dt>");
         page += _("Average Wind") + wxString(_T(": ")) + wxString::Format
-            (_T(" %.2f"), (*it)->RouteInfo(RouteMapOverlay::AVGWIND)) + _T(" ")
+            (_T(" %.2f"), it->RouteInfo(RouteMapOverlay::AVGWIND)) + _T(" ")
 	    + _("knots") + _T("<dt>");
         
         // CUSTOMIZATION
@@ -109,15 +108,15 @@ void ReportDialog::SetRouteMapOverlays(std::list<RouteMapOverlay*> routemapoverl
         // wind as it gives an indication on how strong will be the sailing
         // conditions, and if the crew has sufficient experience to handle it.
         page += _("Maximum Wind") + wxString(_T(": ")) \
-                + wxString::Format(_T(" %.2f"), (*it)->RouteInfo(RouteMapOverlay::MAXWIND)) \
+                + wxString::Format(_T(" %.2f"), it->RouteInfo(RouteMapOverlay::MAXWIND)) \
                 + _T(" ") + _("knots") + _T("<dt>");;
         
         page += _("Average Swell") + wxString(_T(": ")) + wxString::Format
-            (_T(" %.2f"), (*it)->RouteInfo(RouteMapOverlay::AVGSWELL)) + _T(" ")
+            (_T(" %.2f"), it->RouteInfo(RouteMapOverlay::AVGSWELL)) + _T(" ")
 	    + _("meters") + _T("<dt>");
         page += _("Upwind") + wxString(_T(": ")) + wxString::Format
-            (_T(" %.2f%%"), (*it)->RouteInfo(RouteMapOverlay::PERCENTAGE_UPWIND)) + _T("<dt>");
-        double port_starboard = (*it)->RouteInfo(RouteMapOverlay::PORT_STARBOARD);
+            (_T(" %.2f%%"), it->RouteInfo(RouteMapOverlay::PERCENTAGE_UPWIND)) + _T("<dt>");
+        double port_starboard = it->RouteInfo(RouteMapOverlay::PORT_STARBOARD);
         page += _("Port/Starboard") + wxString(_T(": ")) +
             (wxIsNaN(port_starboard) ? _T("nan") : wxString::Format
              (_T("%d/%d"), (int)port_starboard, 100-(int)port_starboard)) + _T("<dt>");
@@ -129,7 +128,7 @@ void ReportDialog::SetRouteMapOverlays(std::list<RouteMapOverlay*> routemapoverl
         // CUSTOMIZATION
         // Display sailing comfort in the report
         page += ("Sailing comfort") + wxString(_T(": ")) \
-                + (*it)->sailingConditionText((*it)->RouteInfo(RouteMapOverlay::COMFORT)) \
+                + it->sailingConditionText(it->RouteInfo(RouteMapOverlay::COMFORT)) \
                 + _T("<dt>\n");
 
         /* determine if currents significantly improve this (boat over ground speed average is 10% or
