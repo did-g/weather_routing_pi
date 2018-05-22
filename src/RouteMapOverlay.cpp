@@ -814,9 +814,10 @@ void RouteMapOverlay::RenderBoatOnCourse(bool cursor_route, wxDateTime time, piD
     if(!pos)
         return;
     
+    Lock();
     std::list<PlotData> plot = GetPlotData(cursor_route);
     
-    for(std::list<PlotData>::iterator it = plot.begin(); it != plot.end(); )  {
+    for(auto it = plot.begin(); it != plot.end(); )  {
         wxDateTime ittime = it->time;
         
         wxDateTime timestart = ittime;
