@@ -23,7 +23,7 @@ install:
   - choco install poedit nsis -x86
 
   # Download and unzip wxwidgets
-  - ps: Start-FileDownload http://downloads.sourceforge.net/project/wxwindows/3.0.2/wxWidgets-3.0.2.zip
+  - ps: Start-FileDownload https://downloads.sourceforge.net/project/wxwindows/3.0.2/wxWidgets-3.0.2.zip
   - cmd: 7z x wxwidgets-3.0.2.zip -o%WXWIN% > null
 
   # some debugging information
@@ -39,7 +39,7 @@ before_build:
   - mkdir build
   - cd build
   - ps: Start-FileDownload https://downloads.sourceforge.net/project/opencpnplugins/opencpn_lib/4.8.2-vc120_xp/opencpn.lib
-  - ps: Start-FileDownload http://downloads.sourceforge.net/project/opencpnplugins/opencpn_packaging_data/OpenCPN_buildwin.7z
+  - ps: Start-FileDownload https://downloads.sourceforge.net/project/opencpnplugins/opencpn_packaging_data/OpenCPN_buildwin.7z
   - cmd: 7z x -y OpenCPN_buildwin.7z -oc:\project\weather_routing_pi
   # copy our temporary WIP version
   - cmd: copy c:\project\weather_routing_pi\buildwin\opencpn.lib c:\project\weather_routing_pi\build
@@ -47,7 +47,6 @@ before_build:
 
 build_script:
   - cmake --build . --target package --config release
-  # --target package doesn't work because of nsis not correctly installed
 
 artifacts:
   - path: 'build\*.exe'
@@ -57,7 +56,7 @@ deploy:
   description: 'release created by AppVeyor CI'
   provider: GitHub
   auth_token: '%GitHub_auth_token%'
-  artifact: installer,portable
+  artifact: installer
   draft: true
   prerelease: true
   on:
