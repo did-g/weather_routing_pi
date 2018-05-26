@@ -787,7 +787,7 @@ void RouteMapOverlay::RenderCourse(bool cursor_route, piDC &dc, PlugIn_ViewPort 
         if (comfortRoute)
         {
             wxColor c = sailingConditionColor(sailingConditionLevel(*itt));
-            DrawLine(to, lc, from, c, dc, vp);
+            DrawLine(to, c, from, lc, dc, vp);
             lc = c;
         } 
         else 
