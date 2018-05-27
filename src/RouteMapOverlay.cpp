@@ -593,8 +593,8 @@ void RouteMapOverlay::RenderPolarChangeMarks(bool cursor_route, piDC &dc, PlugIn
     
     Lock();
     std::list<PlotData> plot = GetPlotData(cursor_route);
-    std::list<PlotData>::reverse_iterator itt =  plot.rbegin();
-    if (itt == plot.rend()) {
+    std::list<PlotData>::iterator itt =  plot.begin();
+    if (itt == plot.end()) {
         Unlock();
         return;
     }
@@ -605,7 +605,7 @@ void RouteMapOverlay::RenderPolarChangeMarks(bool cursor_route, piDC &dc, PlugIn
 #endif    
     
     int polar = itt->polar;
-    for(; itt != plot.rend(); itt++)
+    for(; itt != plot.end(); itt++)
     {
         if(itt->polar == polar)
             continue;
