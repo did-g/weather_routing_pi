@@ -69,6 +69,18 @@ GribRecord::GribRecord(const GribRecord &rec)
         for (int i=0; i<size; i++)
             this->BMSbits[i] = rec.BMSbits[i];
     }
+    if (rec.lat) {
+        int size = rec.Ni*rec.Nj;
+        this->lat = new double[size];
+        for (int i=0; i<size; i++)
+            this->lat[i] = rec.lat[i];
+    }
+    if (rec.lon) {
+        int size = rec.Ni*rec.Nj;
+        this->lon = new double[size];
+        for (int i=0; i<size; i++)
+            this->lon[i] = rec.lon[i];
+    }
 }
 
 bool GribRecord::GetInterpolatedParameters
@@ -421,6 +433,8 @@ GribRecord::~GribRecord()
 {
     if (data) {
         delete [] data;
+        delete [] lat;
+        delete [] lon;
         data = NULL;
     }
     if (BMSbits) {
