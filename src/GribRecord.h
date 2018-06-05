@@ -27,6 +27,14 @@ Elément de base d'un fichier GRIB
 #include <iostream>
 #include <cmath>
 
+#ifndef M_PI_2
+#define M_PI_2     1.57079632679489661923
+#endif
+#ifndef M_PI_4
+#define M_PI_4     0.785398163397448309616
+#endif
+
+
 #define DEBUG_INFO    false
 #define DEBUG_ERROR   true
 #define grib_debug(format, ...)  {if(DEBUG_INFO)  {fprintf(stderr,format,__VA_ARGS__);fprintf(stderr,"\n");}}
@@ -66,6 +74,7 @@ Elément de base d'un fichier GRIB
 #define GRB_CLOUD_TOT      71   /* %      */
 #define GRB_HTSGW         100   /* m      */
 #define GRB_WTMP           80   /* "Water Temperature", "K" */
+#define GRB_COMP_REFL     212   /* dBZ */
 
 #define GRB_WVDIR         101
 #define GRB_WVHGT         102
