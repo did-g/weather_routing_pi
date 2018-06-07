@@ -770,7 +770,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
     Position *rp;
 
     double bearing1 = NAN, bearing2 = NAN;
-    if(parent && configuration.MaxSearchAngle < 180) {
+    if(!configuration.slow_start && parent && configuration.MaxSearchAngle < 180) {
         bearing1 = heading_resolve( parent_bearing - configuration.MaxSearchAngle);
         bearing2 = heading_resolve( parent_bearing + configuration.MaxSearchAngle);
     }
