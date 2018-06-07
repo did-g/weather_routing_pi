@@ -753,6 +753,7 @@ void RouteMapOverlay::RenderCourse(bool cursor_route, piDC &dc, PlugIn_ViewPort 
         Unlock();
         return;
     }
+    Unlock();
 
     /* ComfortDisplay Customization
      * ------------------------------------------------
@@ -766,11 +767,9 @@ void RouteMapOverlay::RenderCourse(bool cursor_route, piDC &dc, PlugIn_ViewPort 
     std::list<PlotData>::reverse_iterator inext = itt;
 
     if (itt == plot.rend()) {
-        Unlock();
         return;
     }
 
-    Lock();
     wxColor lc = sailingConditionColor(sailingConditionLevel(*itt));
 
     /* draw lines to this route */
@@ -798,7 +797,6 @@ void RouteMapOverlay::RenderCourse(bool cursor_route, piDC &dc, PlugIn_ViewPort 
     if(!dc.GetDC())
         glEnd();
 #endif
-    Unlock();
 }
 
 
@@ -814,7 +812,6 @@ void RouteMapOverlay::RenderBoatOnCourse(bool cursor_route, wxDateTime time, piD
     if(!pos)
         return;
     
-    Lock();
     std::list<PlotData> plot = GetPlotData(cursor_route);
     
     for(auto it = plot.begin(); it != plot.end(); )  {
