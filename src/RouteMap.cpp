@@ -783,8 +783,17 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
     //  1234  6789
     // 0          10
 
-    for(auto it = configuration.DegreeSteps.begin();
-        it != configuration.DegreeSteps.end(); it++, prev_deg = mid_deg) {
+    std::list<double> &active = configuration.DegreeSteps;
+    std::list<double> start;
+    if (configuration.slow_start) {
+        for(double step = 0.; step <= 180.; step += 1.0) {
+            start.push_back(step);
+            if(step > 0 && step < 180) start.push_back(360-step);
+        }
+        start.sort();
+        active = start;
+    }
+    for(auto it = active.begin(); it != active.end(); it++, prev_deg = mid_deg) {
 
         double degrees = (*it);
 
