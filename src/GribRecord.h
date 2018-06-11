@@ -26,6 +26,7 @@ Elément de base d'un fichier GRIB
 
 #include <iostream>
 #include <cmath>
+#include <memory>
 
 #ifndef M_PI_2
 #define M_PI_2     1.57079632679489661923
@@ -146,7 +147,7 @@ class GribRecord
 {
     public:
         GribRecord(const GribRecord &rec);
-        GribRecord() { m_bfilled = false; lat = 0; lon  = 0;}
+        GribRecord() { m_bfilled = false; }
         
         virtual ~GribRecord();
   
@@ -213,11 +214,11 @@ class GribRecord
         
         // coordinates of grid point
         void    getXY(int i, int j, double *x, double *y) const {
-            *x = (lon != nullptr)?lon[j*Ni +i]:Lo1+i*Di;
-            *y = (lat != nullptr)?lat[j*Ni +i]:La1+j*Dj;
+            *x = (TableLon)?(TableLon.get())[j*Ni +i]:Lo1+i*Di;
+            *y = (TableLat)?(TableLat.get())[j*Ni +i]:La1+j*Dj;
         };
-        double  getX(int i) const   { return (lon)?lon[i]:Lo1+i*Di;}
-        double  getY(int j) const   { return (lat)?lat[j*Ni]:La1+j*Dj;}
+        double  getX(int i) const   { return (TableLon)?(TableLon.get())[i]:Lo1+i*Di;}
+        double  getY(int j) const   { return (TableLat)?(TableLat.get())[j*Ni]:La1+j*Dj;}
 
         double  getLatMin() const   { return latMin;}
         double  getLonMin() const   { return lonMin;}
@@ -304,8 +305,8 @@ class GribRecord
         bool  isScanJpositive;
         bool  isAdjacentI;
         // unregular grids (Mercator or Lambert) XXX memory hog
-        double *lat;
-        double *lon;
+        std::shared_ptr<double> TableLat;
+        std::shared_ptr<double> TableLon;
         // SECTION 3: BIT MAP SECTION (BMS)
         zuint  BMSsize;
         zuchar *BMSbits;
