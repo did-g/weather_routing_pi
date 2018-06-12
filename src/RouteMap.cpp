@@ -798,7 +798,7 @@ bool Position::Propagate(IsoRouteList &routelist, RouteMapConfiguration &configu
         double degrees = (*it);
 
         mid_deg = degrees;
-        bool   second_pass = (it == configuration.DegreeSteps.begin() || loop_count == 0);
+        bool   second_pass = (it == active.begin() || loop_count == 0);
         int cnt = loop_count*2;
         bool find = false;
         bool fine_search = false;
