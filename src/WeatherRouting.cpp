@@ -507,11 +507,13 @@ void WeatherRouting::Render(piDC &dc, PlugIn_ViewPort &vp)
         it != currentroutemaps.end(); it++) {
         (*it)->Render(time, m_SettingsDialog, dc, vp, false, m_positionOnRoute);
         
-        if(it == currentroutemaps.begin() &&
-           m_SettingsDialog.m_cbDisplayWindBarbs->GetValue())
+        if (it != currentroutemaps.begin())
+            continue;
+
+        if (m_SettingsDialog.m_cbDisplayWindBarbs->GetValue())
             (*it)->RenderWindBarbs(dc, vp);
-        if(it == currentroutemaps.begin() &&
-           m_SettingsDialog.m_cbDisplayCurrent->GetValue())
+
+        if (m_SettingsDialog.m_cbDisplayCurrent->GetValue())
             (*it)->RenderCurrent(dc, vp);
     }
 
