@@ -543,17 +543,16 @@ void WeatherRouting::AddPosition(double lat, double lon)
 
 void WeatherRouting::AddPosition(double lat, double lon, wxString name)
 {
-    for(auto it = RouteMap::Positions.begin(); it != RouteMap::Positions.end(); it++) {
-        if((*it).GUID.IsEmpty() && (*it).Name == name) {
+    for(auto it: RouteMap::Positions) {
+        if(it.GUID.IsEmpty() && it.Name == name) {
             wxMessageDialog mdlg(this, _("This name already exists, replace?\n"),
                                  _("Weather Routing"), wxYES | wxNO | wxICON_WARNING);
             if(mdlg.ShowModal() == wxID_YES) {
-                long index = m_panel->m_lPositions->FindItem(0, (*it).ID);
+                long index = m_panel->m_lPositions->FindItem(0, it.ID);
                 assert(index >=0);
 
-                (*it).lat = lat;
-                (*it).lon = lon;
-                (*it).GUID = wxEmptyString;  // no more an O waypoint
+                it.lat = lat;
+                it.lon = lon;
                 m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
                 m_panel->m_lPositions->SetColumnWidth(POSITION_LAT, wxLIST_AUTOSIZE);
                 m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
@@ -588,15 +587,17 @@ void WeatherRouting::AddPosition(double lat, double lon, wxString name, wxString
     if (GUID.IsEmpty())
         return AddPosition(lat, lon, name);
 
-    for(auto it = RouteMap::Positions.begin();it != RouteMap::Positions.end(); it++) {
-        if((*it).GUID.IsEmpty() /*&& !(*it).NameIsSameAs(name)*/)
+    for(auto it : RouteMap::Positions) {
+        if(it.GUID.IsEmpty())
             continue;
 
-        if((*it).GUID.IsSameAs(GUID)) {
+        if(it.GUID.IsSameAs(GUID)) {
             // wxMessageDialog mdlg(this, _("This name already exists, replace?\n"),_("Weather Routing"), wxYES | wxNO | wxICON_WARNING);
-            long index = m_panel->m_lPositions->FindItem(0, (*it).ID);
-            (*it).lat = lat;
-            (*it).lon = lon;
+            long index = m_panel->m_lPositions->FindItem(0, it.ID);
+            assert(index >=0);
+
+            it.lat = lat;
+            it.lon = lon;
             m_panel->m_lPositions->SetItem(index, POSITION_NAME, name);
             m_panel->m_lPositions->SetColumnWidth(POSITION_NAME, wxLIST_AUTOSIZE);
             m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
