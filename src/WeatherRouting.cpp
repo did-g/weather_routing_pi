@@ -496,10 +496,11 @@ void WeatherRouting::Render(piDC &dc, PlugIn_ViewPort &vp)
     for(int i=0; i<m_panel->m_lWeatherRoutes->GetItemCount(); i++) {
         WeatherRoute *weatherroute =
             reinterpret_cast<WeatherRoute*>(wxUIntToPtr(m_panel->m_lWeatherRoutes->GetItemData(i)));
-        if(weatherroute->routemapoverlay->m_bEndRouteVisible)
-        {
-            weatherroute->routemapoverlay->Render(time, m_SettingsDialog, dc, vp, true);
-        }
+
+        if(!weatherroute->routemapoverlay->m_bEndRouteVisible)
+            continue;
+
+        weatherroute->routemapoverlay->Render(time, m_SettingsDialog, dc, vp, true);
     }
 
     std::list<RouteMapOverlay *>currentroutemaps = CurrentRouteMaps();
