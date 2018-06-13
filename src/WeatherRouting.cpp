@@ -2498,9 +2498,11 @@ void WeatherRouting::Start(RouteMapOverlay *routemapoverlay)
 
     // already waiting?
     for(std::list<RouteMapOverlay*>::iterator it = m_WaitingRouteMaps.begin();
-        it != m_WaitingRouteMaps.end(); it++)
+                it != m_WaitingRouteMaps.end(); it++) {
         if(*it == routemapoverlay)
             return;
+    }
+
     if (m_WaitingRouteMaps.size() == 0 && m_RunningRouteMaps.size() == 0) {
         SendPluginMessage(wxString(_T("OCPN_DRAW_PI_SET_CACHE")), _T(""));
     }
@@ -2523,9 +2525,8 @@ void WeatherRouting::Stop()
 {
     /* stop all the threads at once, rather than waiting for each one before
        telling the next to stop */
-    for(std::list<RouteMapOverlay*>::iterator it = m_RunningRouteMaps.begin();
-        it != m_RunningRouteMaps.end(); it++)
-        (*it)->Stop();
+    for (auto it : m_RunningRouteMaps) 
+        it->Stop();
 
     wxProgressDialog *progressdialog = NULL;
 
