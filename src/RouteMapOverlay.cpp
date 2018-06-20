@@ -1051,6 +1051,7 @@ void RouteMapOverlay::RenderWindBarbs(piDC &dc, PlugIn_ViewPort &vp)
                 configuration.grib = (*it)->m_Grib;
                 configuration.time = (*it)->time;
                 configuration.grib_is_data_deficient = (*it)->m_Grib_is_data_deficient;
+                p.grib_is_data_deficient = configuration.grib_is_data_deficient;
                 v1 = p.GetWindData(configuration, W1, VW1, data_mask1);
 
                 it++;
@@ -1058,6 +1059,7 @@ void RouteMapOverlay::RenderWindBarbs(piDC &dc, PlugIn_ViewPort &vp)
                 configuration.grib = (*it)->m_Grib;
                 configuration.time = (*it)->time;
                 configuration.grib_is_data_deficient = (*it)->m_Grib_is_data_deficient;
+                p.grib_is_data_deficient = configuration.grib_is_data_deficient;
                 v2 = p.GetWindData(configuration, W2, VW2, data_mask2);
                 if (!v1 || !v2) {
                     // not valid data
@@ -1238,6 +1240,7 @@ void RouteMapOverlay::RenderCurrent(piDC &dc, PlugIn_ViewPort &vp)
                 configuration.grib = (*it)->m_Grib;
                 configuration.time = (*it)->time;
                 configuration.grib_is_data_deficient = (*it)->m_Grib_is_data_deficient;
+                p.grib_is_data_deficient = configuration.grib_is_data_deficient;
                 bool v1, v2;
                 
                 v1 = p.GetCurrentData(configuration, W1, VW1, data_mask1);
@@ -1247,6 +1250,7 @@ void RouteMapOverlay::RenderCurrent(piDC &dc, PlugIn_ViewPort &vp)
                 configuration.grib = (*it)->m_Grib;
                 configuration.time = (*it)->time;
                 configuration.grib_is_data_deficient = (*it)->m_Grib_is_data_deficient;
+                p.grib_is_data_deficient = configuration.grib_is_data_deficient;
                 v2 = p.GetCurrentData(configuration, W2, VW2, data_mask2);
                 if (!v1 || !v2) {
                     goto skip;
