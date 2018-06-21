@@ -593,22 +593,27 @@ void RouteMapOverlay::RenderPolarChangeMarks(bool cursor_route, piDC &dc, PlugIn
     
     std::list<PlotData> plot = GetPlotData(cursor_route);
     std::list<PlotData>::iterator itt =  plot.begin();
-    if (itt == plot.end()) {
+    if (itt == plot.end())
         return;
-    }
 
 #ifndef __OCPN__ANDROID__
     if(!dc.GetDC())
         glBegin(GL_LINES);
 #endif    
     
+    std::list<PlotData>::iterator prev;
     int polar = itt->polar;
-    for(; itt != plot.end(); itt++)
+    for(prev = itt; itt != plot.end(); prev = itt, itt++)
     {
         if(itt->polar == polar)
             continue;
+
         wxPoint r;
         GetCanvasPixLL(&vp, &r, itt->lat, itt->lon);
+        wxPoint p;
+        GetCanvasPixLL(&vp, &p, prev->lat, prev->lon);
+        r.x = (r.x +p.x)/2;
+        r.y = (r.y +p.y)/2;
         int s = 6;
 #ifndef __OCPN__ANDROID__
         if(!dc.GetDC()) {
