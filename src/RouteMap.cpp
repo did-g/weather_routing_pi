@@ -2610,11 +2610,15 @@ bool RouteMapConfiguration::Update()
     bool havestart = false, haveend = false;
     PlugIn_Waypoint waypoint;
 
-    for(auto it = RouteMap::Positions.begin();it != RouteMap::Positions.end(); it++) {
-        if(Start == (*it).Name) {
-            double lat = (*it).lat;
-            double lon = (*it).lon;
-            if (!(*it).GUID.IsEmpty() && GetSingleWaypoint( (*it).GUID, &waypoint )) {
+    if (!RouteGUID.IsEmpty()) {
+        havestart = true;
+        haveend = true;
+    }
+    else for(const auto &it : RouteMap::Positions ) {
+        if(Start == it.Name) {
+            double lat = it.lat;
+            double lon = it.lon;
+            if (!it.GUID.IsEmpty() && GetSingleWaypoint( it.GUID, &waypoint )) {
                 lat = waypoint.m_lat;
                 lon = waypoint.m_lon;
             }
@@ -2623,10 +2627,10 @@ bool RouteMapConfiguration::Update()
                 
             havestart = true;
         }
-        if(End == (*it).Name) {
-            double lat = (*it).lat;
-            double lon = (*it).lon;
-            if (!(*it).GUID.IsEmpty() && GetSingleWaypoint( (*it).GUID, &waypoint )) {
+        if(End == it.Name) {
+            double lat = it.lat;
+            double lon = it.lon;
+            if (!it.GUID.IsEmpty() && GetSingleWaypoint( it.GUID, &waypoint )) {
                 lat = waypoint.m_lat;
                 lon = waypoint.m_lon;
             }
