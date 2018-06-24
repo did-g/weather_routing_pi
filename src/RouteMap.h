@@ -272,7 +272,12 @@ struct RouteMapConfiguration {
     bool Update();
 
     wxString RouteGUID;       /* Route GUID if any */
-    wxString Start, End;
+    wxString Start;
+    wxString StartGUID;
+
+    wxString End;
+    wxString EndGUID;
+
     wxDateTime StartTime;
 
     double DeltaTime; /* default time in seconds between propagations */

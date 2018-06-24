@@ -2611,8 +2611,16 @@ bool RouteMapConfiguration::Update()
     PlugIn_Waypoint waypoint;
 
     if (!RouteGUID.IsEmpty()) {
-        havestart = true;
-        haveend = true;
+        if (!StartGUID.IsEmpty() && GetSingleWaypoint( StartGUID, &waypoint )) {
+            StartLat = waypoint.m_lat;
+            StartLon = waypoint.m_lon;
+            havestart = true;
+        }
+        if (!EndGUID.IsEmpty() && GetSingleWaypoint( EndGUID, &waypoint )) {
+            EndLat = waypoint.m_lat;
+            EndLon = waypoint.m_lon;
+            haveend = true;
+        }
     }
     else for(const auto &it : RouteMap::Positions ) {
         if(Start == it.Name) {
