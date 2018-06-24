@@ -666,43 +666,20 @@ void WeatherRouting::AddPosition(double lat, double lon, wxString name, wxString
     m_ConfigurationBatchDialog.AddSource(name);
 }
 
-void WeatherRouting::AddRoute(std::unique_ptr<PlugIn_Route> &rte)
+void WeatherRouting::AddRoute(wxString& GUID)
 {
-    PlugIn_Route *proute = rte.get();
-    if (!proute)
-        return;
-
-    PlugIn_Waypoint *pwp;
-    wxPlugin_WaypointListNode *pwpnode = proute->pWaypointList->GetFirst();
-    if (!pwpnode)
-        return;
-
     RouteMapConfiguration configuration;
     if(FirstCurrentRouteMap())
         configuration = FirstCurrentRouteMap()->GetConfiguration();
     else
         configuration = DefaultConfiguration();
 
-    configuration.RouteGUID = proute->m_GUID;
-
-    pwp = pwpnode->GetData();
-    AddPosition(pwp->m_lat, pwp->m_lon, pwp->m_MarkName, pwp->m_GUID);
-    configuration.Start = pwp->m_MarkName;
-    configuration.StartLat = pwp->m_lat, configuration.StartLon = pwp->m_lon;
-
+    configuration.RouteGUID = GUID;
     configuration.StartTime = wxDateTime::Now();
     configuration.DeltaTime = 3600;
 
-    while( pwpnode->GetNext()) {
-        pwpnode = pwpnode->GetNext();
-    }
-
-    pwp = pwpnode->GetData();
-    AddPosition(pwp->m_lat, pwp->m_lon, pwp->m_MarkName, pwp->m_GUID);
-    configuration.End = pwp->m_MarkName;
-    configuration.EndLat = pwp->m_lat, configuration.EndLon = pwp->m_lon;
-
-    AddConfiguration(configuration);
+    if (!AddConfiguration(configuration))
+        return;
 #if 0
     for(int i=0; i<m_panel->m_lWeatherRoutes->GetItemCount(); i++) {
         WeatherRoute *weatherroute =
@@ -2040,8 +2017,38 @@ void WeatherRouting::UpdateDialogs()
         m_PlotDialog.SetRouteMapOverlay(FirstCurrentRouteMap());
 }
 
-void WeatherRouting::AddConfiguration(const RouteMapConfiguration &configuration)
+bool WeatherRouting::AddConfiguration(RouteMapConfiguration &configuration)
 {
+    if (!configuration.RouteGUID.IsEmpty()) {
+        // use stuff from actual route not whatever was saved
+        std::unique_ptr<PlugIn_Route> rte = GetRoute_Plugin(configuration.RouteGUID);
+        if (rte.get() == nullptr)
+           return false;
+
+        PlugIn_Route *proute = rte.get();
+        if (!proute)
+            return false;
+
+        PlugIn_Waypoint *pwp;
+        wxPlugin_WaypointListNode *pwpnode = proute->pWaypointList->GetFirst();
+        if (!pwpnode)
+            return false;
+
+        pwp = pwpnode->GetData();
+        AddPosition(pwp->m_lat, pwp->m_lon, pwp->m_MarkName, pwp->m_GUID);
+        configuration.Start = pwp->m_MarkName;
+        configuration.StartGUID = pwp->m_GUID;
+        configuration.StartLat = pwp->m_lat, configuration.StartLon = pwp->m_lon;
+        while( pwpnode->GetNext()) {
+            pwpnode = pwpnode->GetNext();
+        }
+
+        pwp = pwpnode->GetData();
+        AddPosition(pwp->m_lat, pwp->m_lon, pwp->m_MarkName, pwp->m_GUID);
+        configuration.End = pwp->m_MarkName;
+        configuration.EndGUID = pwp->m_GUID;
+        configuration.EndLat = pwp->m_lat, configuration.EndLon = pwp->m_lon;
+    }
     WeatherRoute *weatherroute = new WeatherRoute;
     RouteMapOverlay *routemapoverlay = weatherroute->routemapoverlay;
     routemapoverlay->SetConfiguration(configuration);
@@ -2059,6 +2066,7 @@ void WeatherRouting::AddConfiguration(const RouteMapConfiguration &configuration
     m_mDeleteAll->Enable();
     m_mComputeAll->Enable();
     m_mExportAll->Enable();
+    return true;
 }
 
 void WeatherRouting::UpdateRouteMap(RouteMapOverlay *routemapoverlay)
