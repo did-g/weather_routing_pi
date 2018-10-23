@@ -1684,9 +1684,6 @@ bool WeatherRouting::OpenXML(wxString filename, bool reportfailure)
     SetTitle(_("Weather Routing") + wxString(_T(" - ")) + fn.GetFullName());
     m_FileName = fn;
 
-    wxProgressDialog *progressdialog = NULL;
-    wxDateTime start = wxDateTime::UNow();
-
     wxString lastboatFileName;
     Boat lastboat;
 
@@ -1706,21 +1703,6 @@ bool WeatherRouting::OpenXML(wxString filename, bool reportfailure)
     
         int i=0;
         for(TiXmlElement* e = root.FirstChild().Element(); e; e = e->NextSiblingElement(), i++) {
-            if(progressdialog) {
-                if(!progressdialog->Update(i)) {
-                    delete progressdialog;
-                    return true;
-                }
-            } else {
-                wxDateTime now = wxDateTime::UNow();
-                /* if it's going to take more than a half second, show a progress dialog */
-                if((now-start).GetMilliseconds() > 250 && i < count/2) {
-                    progressdialog = new wxProgressDialog(
-                        _("Load"), _("Weather Routing"), count, this,
-                        wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
-                }
-            }
-        
             if(!strcmp(e->Value(), "Position")) {
                 wxString name = wxString::FromUTF8(e->Attribute("Name"));
                 wxString GUID = wxString::FromUTF8(e->Attribute("GUID"));
@@ -1827,11 +1809,9 @@ bool WeatherRouting::OpenXML(wxString filename, bool reportfailure)
         }
     }
 
-    delete progressdialog;
     return true;
 failed:
 
-    delete progressdialog;
     if(reportfailure) {
         wxMessageDialog mdlg(this, error, _("Weather Routing"), wxOK | wxICON_ERROR);
         mdlg.ShowModal();
