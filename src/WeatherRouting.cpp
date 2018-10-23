@@ -1306,11 +1306,13 @@ void WeatherRouting::OnClose( wxCommandEvent& event )
 
 void WeatherRouting::OnCollPaneChanged( wxCollapsiblePaneEvent& event )
 {
-    if(m_colpane && m_colpane->IsExpanded())
+    if (m_colpane == nullptr)
+        return;
+
+    if (m_colpane->IsExpanded())
         SetSize(m_size);
     else
-        if(m_colpane)
-            Fit();
+        Fit();
     Update();
     Layout();
 }
@@ -1318,13 +1320,12 @@ void WeatherRouting::OnCollPaneChanged( wxCollapsiblePaneEvent& event )
 
 void WeatherRouting::OnSize( wxSizeEvent& event )
 {
-    if(m_colpane && m_colpane->IsExpanded ()) {
-        Update();
-        Layout();
-        m_size = GetSize();
-    } else {
-        if(m_colpane)
-            Fit();
+    if (m_colpane) {
+       if (m_colpane->IsExpanded()) {
+          Update();
+          Layout();
+          m_size = GetSize();
+       }
     }
     event.Skip();
 }
