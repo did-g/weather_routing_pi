@@ -393,8 +393,8 @@ WeatherRoutingPanel::WeatherRoutingPanel( wxWindow* parent, wxWindowID id, const
 	
 	// Connect Events
 	m_lPositions->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( WeatherRoutingPanel::OnEditPositionClick ), NULL, this );
-	m_lPositions->Connect( wxEVT_LEFT_DOWN, wxMouseEventHandler( WeatherRoutingPanel::OnLeftUp ), NULL, this );
-	m_lPositions->Connect( wxEVT_LEFT_UP, wxMouseEventHandler( WeatherRoutingPanel::OnLeftDown ), NULL, this );
+	m_lPositions->Connect( wxEVT_LEFT_DOWN, wxMouseEventHandler( WeatherRoutingPanel::OnLeftDown ), NULL, this );
+	m_lPositions->Connect( wxEVT_LEFT_UP, wxMouseEventHandler( WeatherRoutingPanel::OnLeftUp ), NULL, this );
 	m_lPositions->Connect( wxEVT_COMMAND_LIST_KEY_DOWN, wxListEventHandler( WeatherRoutingPanel::OnPositionKeyDown ), NULL, this );
 	m_lWeatherRoutes->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( WeatherRoutingPanel::OnEditConfigurationClick ), NULL, this );
 	m_lWeatherRoutes->Connect( wxEVT_LEFT_DOWN, wxMouseEventHandler( WeatherRoutingPanel::OnWeatherRoutesListLeftDown ), NULL, this );
@@ -411,8 +411,8 @@ WeatherRoutingPanel::~WeatherRoutingPanel()
 {
 	// Disconnect Events
 	m_lPositions->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( WeatherRoutingPanel::OnEditPositionClick ), NULL, this );
-	m_lPositions->Disconnect( wxEVT_LEFT_DOWN, wxMouseEventHandler( WeatherRoutingPanel::OnLeftUp ), NULL, this );
-	m_lPositions->Disconnect( wxEVT_LEFT_UP, wxMouseEventHandler( WeatherRoutingPanel::OnLeftDown ), NULL, this );
+	m_lPositions->Disconnect( wxEVT_LEFT_DOWN, wxMouseEventHandler( WeatherRoutingPanel::OnLeftDown ), NULL, this );
+	m_lPositions->Disconnect( wxEVT_LEFT_UP, wxMouseEventHandler( WeatherRoutingPanel::OnLeftUp ), NULL, this );
 	m_lPositions->Disconnect( wxEVT_COMMAND_LIST_KEY_DOWN, wxListEventHandler( WeatherRoutingPanel::OnPositionKeyDown ), NULL, this );
 	m_lWeatherRoutes->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( WeatherRoutingPanel::OnEditConfigurationClick ), NULL, this );
 	m_lWeatherRoutes->Disconnect( wxEVT_LEFT_DOWN, wxMouseEventHandler( WeatherRoutingPanel::OnWeatherRoutesListLeftDown ), NULL, this );

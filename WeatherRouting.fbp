@@ -1165,8 +1165,8 @@
                                                     <event name="OnKillFocus"></event>
                                                     <event name="OnLeaveWindow"></event>
                                                     <event name="OnLeftDClick">OnEditPositionClick</event>
-                                                    <event name="OnLeftDown">OnLeftUp</event>
-                                                    <event name="OnLeftUp">OnLeftDown</event>
+                                                    <event name="OnLeftDown">OnLeftDown</event>
+                                                    <event name="OnLeftUp">OnLeftUp</event>
                                                     <event name="OnListBeginDrag"></event>
                                                     <event name="OnListBeginLabelEdit"></event>
                                                     <event name="OnListBeginRDrag"></event>
