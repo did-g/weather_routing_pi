@@ -2398,7 +2398,7 @@ void WeatherRouting::Export(RouteMapOverlay &routemapoverlay)
         return;
     }
 
-    PlugIn_Track* newPath = new PlugIn_Track;
+    PlugIn_Route* newPath = new PlugIn_Route;
     wxDateTime display_time = routemapoverlay.StartTime();
     if(m_SettingsDialog.m_cbUseLocalTime->GetValue())
         display_time = display_time.FromUTC();
@@ -2413,6 +2413,7 @@ void WeatherRouting::Export(RouteMapOverlay &routemapoverlay)
             (it.lat, heading_resolve(it.lon), _T("circle"), _("Weather Route Point"));
 
         newPoint->m_CreateTime = it.time;
+        newPoint->m_MarkDescription.Printf("VMG=%.2f", it.VBG);
         newPath->pWaypointList->Append(newPoint);
     }
 
@@ -2425,7 +2426,7 @@ void WeatherRouting::Export(RouteMapOverlay &routemapoverlay)
         newPath->pWaypointList->Append(newPoint);
     }
 
-    AddPlugInTrack(newPath);
+    AddPlugInRoute(newPath);
     // not done PlugIn_Track DTOR
     newPath->pWaypointList->DeleteContents( true );
     newPath->pWaypointList->Clear();
