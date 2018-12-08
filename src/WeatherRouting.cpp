@@ -2443,7 +2443,7 @@ void WeatherRouting::Export(RouteMapOverlay &routemapoverlay)
 
     for(auto const &it : plotdata) {
         PlugIn_Waypoint*  newPoint = new PlugIn_Waypoint
-            (it.lat, heading_resolve(it.lon), _T("circle"), _("Weather Route Point"));
+            (it.lat, heading_resolve(it.lon), _T("xmblue"), _("Weather Route Point"));
 
         newPoint->m_CreateTime = it.time;
         newPoint->m_MarkDescription.Printf("VMG=%.2f", it.VBG);
@@ -2456,6 +2456,8 @@ void WeatherRouting::Export(RouteMapOverlay &routemapoverlay)
         PlugIn_Waypoint*  newPoint = new PlugIn_Waypoint
             (p->lat, p->lon, _T("circle"), _("Weather Route Destination"));
         newPoint->m_CreateTime =  routemapoverlay.EndTime();
+        // shared endpoint ?
+        // newPoint->m_GUID = c.EndGUID;
         newPath->pWaypointList->Append(newPoint);
     }
 
