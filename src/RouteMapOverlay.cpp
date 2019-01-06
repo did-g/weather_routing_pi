@@ -166,7 +166,7 @@ void RouteMapOverlay::RouteAnalysis(PlugIn_Route *proute)
         rte.lat = pwp->m_lat, rte.lon = pwp->m_lon;
         next = &rte;
         eta = data.PropagateToPoint(rte.lat, rte.lon, configuration, H, data_mask, false);
-        if(wxIsNaN(eta)) {
+        if(std::isnan(eta)) {
             ok = false;
             eta = dt;
         }
@@ -383,7 +383,7 @@ void RouteMapOverlay::Render(wxDateTime time, SettingsDialog &settingsdialog,
     if(!justendroute) {
         RouteMapConfiguration configuration = GetConfiguration();
 
-        if(!wxIsNaN(configuration.StartLat)) {
+        if(!std::isnan(configuration.StartLat)) {
             wxPoint r;
             GetCanvasPixLL(&vp, &r, configuration.StartLat, configuration.StartLon);
             SetColor(dc, *wxBLUE, true);
@@ -393,7 +393,7 @@ void RouteMapOverlay::Render(wxDateTime time, SettingsDialog &settingsdialog,
             dc.DrawLine(r.x-10, r.y+7, r.x+10, r.y+7);
         }
 
-        if(!wxIsNaN(configuration.EndLat)) {
+        if(!std::isnan(configuration.EndLat)) {
             wxPoint r;
             GetCanvasPixLL(&vp, &r, configuration.EndLat, configuration.EndLon);
             SetColor(dc, *wxRED, true);
