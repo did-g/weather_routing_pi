@@ -2375,7 +2375,7 @@ void WeatherRouting::Export(RouteMapOverlay &routemapoverlay)
             (it.lat, heading_resolve(it.lon), _T("xmblue"), _("Weather Route Point"));
 
         newPoint->m_CreateTime = it.time;
-        newPoint->m_MarkDescription.Printf("VMG=%.2f", it.VBG);
+        newPoint->m_MarkDescription.Printf("VMG=%.1f", it.VBG);
         newPath->pWaypointList->Append(newPoint);
     }
 
