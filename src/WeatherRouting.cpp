@@ -625,47 +625,6 @@ void WeatherRouting::AddPosition(double lat, double lon, wxString name, wxString
     m_ConfigurationBatchDialog.AddSource(name);
 }
 
-void WeatherRouting::AddPosition(double lat, double lon, wxString name, wxString GUID)
-{
-    if (GUID.IsEmpty())
-        return AddPosition(lat, lon, name);
-
-    for(auto it = RouteMap::Positions.begin();it != RouteMap::Positions.end(); it++) {
-        if((*it).GUID.IsEmpty())
-            continue;
-
-        if((*it).GUID.IsSameAs(GUID)) {
-            // wxMessageDialog mdlg(this, _("This name already exists, replace?\n"),_("Weather Routing"), wxYES | wxNO | wxICON_WARNING);
-            long index = m_panel->m_lPositions->FindItem(0, name);
-            (*it).lat = lat;
-            (*it).lon = lon;
-            m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
-            m_panel->m_lPositions->SetColumnWidth(POSITION_LAT, wxLIST_AUTOSIZE);
-            m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
-            m_panel->m_lPositions->SetColumnWidth(POSITION_LON, wxLIST_AUTOSIZE);
-            UpdateConfigurations();
-            return;
-        }
-    }
-    
-    RouteMap::Positions.push_back(RouteMapPosition(name, lat, lon, GUID));
-    UpdateConfigurations();
-
-    wxListItem item;
-    long index = m_panel->m_lPositions->InsertItem(m_panel->m_lPositions->GetItemCount(), item);
-    m_panel->m_lPositions->SetItem(index, POSITION_NAME, name);
-    m_panel->m_lPositions->SetColumnWidth(POSITION_NAME, wxLIST_AUTOSIZE);
-    
-    m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
-    m_panel->m_lPositions->SetColumnWidth(POSITION_LAT, wxLIST_AUTOSIZE);
-    m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
-    m_panel->m_lPositions->SetColumnWidth(POSITION_LON, wxLIST_AUTOSIZE);
-    
-
-    m_ConfigurationDialog.AddSource(name);
-    m_ConfigurationBatchDialog.AddSource(name);
-}
-
 void WeatherRouting::AddRoute(wxString& GUID)
 {
     RouteMapConfiguration configuration;

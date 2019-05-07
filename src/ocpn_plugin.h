@@ -787,14 +787,11 @@ extern  DECL_EXP wxString GetLocaleCanonicalName();
 class PI_S57Obj;
 WX_DECLARE_LIST(PI_S57Obj, ListOfPI_S57Obj);
 
-class PI_ChartObj;
-WX_DECLARE_LIST(PI_ChartObj, ListOfPI_ChartObj);
 
 // ----------------------------------------------------------------------------
 // PlugInChartBaseGL
 //  Derived from PlugInChartBase, add OpenGL Vector chart support
 // ----------------------------------------------------------------------------
-class ListOfS57ObjRegion;
 
 class DECL_EXP PlugInChartBaseGL : public PlugInChartBase
 {
@@ -848,7 +845,6 @@ public:
     virtual float *GetNoCOVRTableHead(int iTable);
     
     virtual void ClearPLIBTextList();
-    virtual ListOfS57ObjRegion *GetHazards(const void *region, ListOfS57ObjRegion  *lst = 0);
     
 };
 
@@ -1291,8 +1287,8 @@ extern "C"  DECL_EXP void RemoveCanvasMenuItem(int item, const char *name = "");
 extern "C"  DECL_EXP void SetCanvasMenuItemViz(int item, bool viz, const char *name = ""); // Temporarily change context menu options
 extern "C"  DECL_EXP void SetCanvasMenuItemGrey(int item, bool grey, const char *name = "");
 
-// Extra waypoints, routes and tracks
-extern DECL_EXP wxString GetSelectedWaypointGUID_Plugin(  );
+// Extract waypoints, routes and tracks
+extern DECL_EXP wxString GetSelectedWaypointGUID_Plugin( );
 extern DECL_EXP wxString GetSelectedRouteGUID_Plugin( );
 extern DECL_EXP wxString GetSelectedTrackGUID_Plugin( );
 
