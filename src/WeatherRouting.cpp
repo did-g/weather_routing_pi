@@ -432,10 +432,10 @@ void WeatherRouting::CopyDataFiles(wxString from, wxString to)
 
 static void set_lat_lon(wxListCtrl *l, long index, double lat, double lon)
 {
-    l->SetItem(index, WeatherRouting::POSITION_LAT, wxString::Format(_T("%.5f"), lat));
+    l->SetItem(index, WeatherRouting::POSITION_LAT, toSDMM_PlugIn(1, lat, false));
     l->SetColumnWidth(WeatherRouting::POSITION_LAT, wxLIST_AUTOSIZE);
 
-    l->SetItem(index, WeatherRouting::POSITION_LON, wxString::Format(_T("%.5f"), lon));
+    l->SetItem(index, WeatherRouting::POSITION_LON, toSDMM_PlugIn(2, lon, false));
     l->SetColumnWidth(WeatherRouting::POSITION_LON, wxLIST_AUTOSIZE);
 }
 
