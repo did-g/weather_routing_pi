@@ -29,6 +29,10 @@
 #include <wx/progdlg.h>
 #include <wx/dir.h>
 
+#include <wx/clipbrd.h>
+#include <wx/tokenzr.h>
+#include <wx/regex.h>
+
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
@@ -943,21 +947,312 @@ void WeatherRouting::UpdateRoutePositionDialog()
     dlg.Fit();
 }
 
+
 class NewPositionDialog : public NewPositionDialogBase 
 {
-    NewPositionDialog(wxWindow* parent) : NewPositionDialogBase(parent) 
-    {
+public:
+    NewPositionDialog(wxWindow* parent) : NewPositionDialogBase(parent) {}
+
+    void onMenuSelection( wxCommandEvent& event ) override; // { event.Skip(); } 
+
+
+};
+
+static double fromDMM( wxString sdms )
+{
+    wchar_t buf[64];
+    char narrowbuf[64];
+    int i, len, top = 0;
+    double stk[32], sign = 1;
+
+    //First round of string modifications to accomodate some known strange formats
+    wxString replhelper;
+    replhelper = wxString::FromUTF8( "´·" ); //UKHO PDFs
+    sdms.Replace( replhelper, _T(".") );
+    replhelper = wxString::FromUTF8( "\"·" ); //Don't know if used, but to make sure
+    sdms.Replace( replhelper, _T(".") );
+    replhelper = wxString::FromUTF8( "·" );
+    sdms.Replace( replhelper, _T(".") );
+
+    replhelper = wxString::FromUTF8( "s. š." ); //Another example: cs.wikipedia.org (someone was too active translating...)
+    sdms.Replace( replhelper, _T("N") );
+    replhelper = wxString::FromUTF8( "j. š." );
+    sdms.Replace( replhelper, _T("S") );
+    sdms.Replace( _T("v. d."), _T("E") );
+    sdms.Replace( _T("z. d."), _T("W") );
+
+    //If the string contains hemisphere specified by a letter, then '-' is for sure a separator...
+    sdms.UpperCase();
+    if( sdms.Contains( _T("N") ) || sdms.Contains( _T("S") ) || sdms.Contains( _T("E") )
+            || sdms.Contains( _T("W") ) ) sdms.Replace( _T("-"), _T(" ") );
+
+    wcsncpy( buf, sdms.wc_str( wxConvUTF8 ), 63 );
+    buf[63] = 0;
+    len = wxMin( wcslen( buf ), sizeof(narrowbuf)-1);;
+
+    for( i = 0; i < len; i++ ) {
+        wchar_t c = buf[i];
+        if( ( c >= '0' && c <= '9' ) || c == '-' || c == '.' || c == '+' ) {
+            narrowbuf[i] = c;
+            continue; /* Digit characters are cool as is */
+        }
+        if( c == ',' ) {
+            narrowbuf[i] = '.'; /* convert to decimal dot */
+            continue;
+        }
+        if( ( c | 32 ) == 'w' || ( c | 32 ) == 's' ) sign = -1; /* These mean "negate" (note case insensitivity) */
+        narrowbuf[i] = 0; /* Replace everything else with nuls */
+    }
+
+    /* Build a stack of doubles */
+    stk[0] = stk[1] = stk[2] = 0;
+    for( i = 0; i < len; i++ ) {
+        while( i < len && narrowbuf[i] == 0 )
+            i++;
+        if( i != len ) {
+            stk[top++] = atof( narrowbuf + i );
+            i += strlen( narrowbuf + i );
+        }
+    }
+
+    return sign * ( stk[0] + ( stk[1] + stk[2] / 60 ) / 60 );
+}
+
+
+class PositionParser
+{
+public:
+    PositionParser(const wxString & src);
+    const wxString & GetSeparator() const { return separator; }
+    const wxString & GetLatitudeString() const { return latitudeString; }
+    const wxString & GetLongitudeString() const { return longitudeString; }
+    double GetLatitude() const { return latitude; }
+    double GetLongitude() const { return longitude; }
+    bool FindSeparator(const wxString & src);
+    bool IsOk() const { return parsedOk; }
+
+private:
+    wxString source;
+    wxString separator;
+    wxString latitudeString;
+    wxString longitudeString;
+    double latitude;
+    double longitude;
+    bool parsedOk;
+};
+
+PositionParser::PositionParser(const wxString & src)
+{
+    parsedOk = false;
+    if( FindSeparator( src ) ) {
+        latitude = fromDMM( latitudeString );
+        longitude = fromDMM( longitudeString );
+        if( (latitude != 0.0) && (longitude != 0.0) ) parsedOk = true;
+    }
+}
+
+bool PositionParser::FindSeparator(const wxString & src)
+{ 
+
+    // Used when format is similar to "12 34.56 N 12 34.56 E"
+    wxString posPartOfSeparator = _T("");
+
+    // First the XML case:
+    // Generalized XML tag format, accepts anything like <XXX yyy="<lat>" zzz="<lon>" >
+    // GPX format <wpt lat="<lat>" lon="<lon>" /> tag among others.
+
+    wxRegEx regex;
+
+    int re_compile_flags = wxRE_ICASE;
+#ifdef wxHAS_REGEX_ADVANCED
+    re_compile_flags |= wxRE_ADVANCED;
+#endif
+
+    regex.Compile(
+            _T( "<[a-z,A-Z]*\\s*[a-z,A-Z]*=\"([0-9,.]*)\"\\s*[a-z,A-Z]*=\"([-,0-9,.]*)\"\\s*/*>" ),
+                  re_compile_flags );
+
+    if( regex.IsValid() ) {
+        if( regex.Matches( src ) ) {
+			int n = regex.GetMatchCount();
+            latitudeString = regex.GetMatch( src, 1 );
+            longitudeString = regex.GetMatch( src, 2 );
+            latitudeString.Trim( true );
+            latitudeString.Trim( false );
+            longitudeString.Trim( true );
+            longitudeString.Trim( false );
+            return true;
+        }
+    }
+
+    // Now try various separators.
+
+    separator = _T(", ");
+    wxStringTokenizer tk1(src, separator);
+    if (tk1.CountTokens() == 2) {
+        latitudeString = tk1.GetNextToken();
+        latitudeString.Trim(true);
+        latitudeString.Trim(false);
+        longitudeString = tk1.GetNextToken();
+        longitudeString.Trim(true);
+        longitudeString.Trim(false);
+
+        return true;
+    }
+
+    separator = _T(",");
+    wxStringTokenizer tk2 (src, separator);
+    if (tk2.CountTokens() == 2) {
+        latitudeString = tk2.GetNextToken();
+        latitudeString.Trim(true);
+        latitudeString.Trim(false);
+        longitudeString = tk2.GetNextToken();
+        longitudeString.Trim(true);
+        longitudeString.Trim(false);
+
+        return true;
+    }   
+
+    separator = _T(" ");
+    wxStringTokenizer tk3(src, separator);
+    if (tk3.CountTokens() == 2) {
+        latitudeString = tk3.GetNextToken();
+        latitudeString.Trim(true);
+        latitudeString.Trim(false);
+        longitudeString = tk3.GetNextToken();
+        longitudeString.Trim(true);
+        longitudeString.Trim(false);
+
+        return true;
     }
     
+    separator = _T("\t");
+    wxStringTokenizer tk4(src, separator);
+    if (tk4.CountTokens() == 2) {
+        latitudeString = tk4.GetNextToken();
+        latitudeString.Trim(true);
+        latitudeString.Trim(false);
+        longitudeString = tk4.GetNextToken();
+        longitudeString.Trim(true);
+        longitudeString.Trim(false);
+
+        return true;
+    }
+   
+    separator = _T("\n");
+    wxStringTokenizer tk5(src, separator);
+    if (tk5.CountTokens() == 2) {
+        latitudeString = tk5.GetNextToken();
+        latitudeString.Trim(true);
+        latitudeString.Trim(false);
+        longitudeString = tk5.GetNextToken();
+        longitudeString.Trim(true);
+        longitudeString.Trim(false);
+
+        return true;
+    }
+  
+    separator = _T("N");   
+    posPartOfSeparator = _T("N");
+    wxStringTokenizer tk6(src, separator);
+    if (tk6.CountTokens() == 2) {
+        latitudeString = tk6.GetNextToken() << posPartOfSeparator;
+        latitudeString.Trim(true);
+        latitudeString.Trim(false);
+        longitudeString = tk6.GetNextToken();
+        longitudeString.Trim(true);
+        longitudeString.Trim(false);
+
+        return true;
+    }
+   
+    separator = _T("S");   
+    posPartOfSeparator = _T("S");
+    wxStringTokenizer tk7(src, separator);
+    if (tk7.CountTokens() == 2) {
+        latitudeString = tk7.GetNextToken() << posPartOfSeparator;
+        latitudeString.Trim(true);
+        latitudeString.Trim(false);
+        longitudeString = tk7.GetNextToken();
+        longitudeString.Trim(true);
+        longitudeString.Trim(false);
+
+        return true;
+    }   
+
+    // Give up.
+    return false;
+}
+
+void NewPositionDialog::onMenuSelection( wxCommandEvent& event ) 
+{
+    // Fetch the control values, convert to degrees
+    double lat = fromDMM( m_tLatitudeDegrees->GetValue() );
+    double lon = fromDMM( m_tLongitudeDegrees->GetValue() );
+
+    wxString result;
+    wxTextCtrl* contextObject = m_tLatitudeDegrees;
+
+    switch( event.GetId() ) {
+        case ID_RCLK_MENU_PASTE_LO:
+            contextObject = m_tLongitudeDegrees;
+        case ID_RCLK_MENU_PASTE_LA: {
+            if( wxTheClipboard->Open() ) {
+                wxTextDataObject data;
+                wxTheClipboard->GetData( data );
+                result = data.GetText();
+                contextObject->SetValue( result );
+                wxTheClipboard->Close();
+            }
+            return;
+        }
+        case ID_RCLK_MENU_PASTE_LL: {
+            if( wxTheClipboard->Open() ) {
+                wxTextDataObject data;
+                wxTheClipboard->GetData( data );
+                result = data.GetText();
+                PositionParser pparse( result );
+
+                if( pparse.IsOk() ) {
+                    m_tLatitudeDegrees->SetValue( pparse.GetLatitudeString() );
+                    m_tLongitudeDegrees->SetValue( pparse.GetLongitudeString() );
+                }
+                wxTheClipboard->Close();
+            }
+            return;
+        }
+        
+        case ID_RCLK_MENU_COPY_LO:
+            result = m_tLongitudeDegrees->GetValue();
+            break;
+        case ID_RCLK_MENU_COPY_LA:
+            result =  m_tLatitudeDegrees->GetValue();
+            break;
+        case ID_RCLK_MENU_COPY_LL: {
+            result << toSDMM_PlugIn( 1, lat, true ) <<_T('\t');
+            result << toSDMM_PlugIn( 2, lon, true );
+            break;
+        }
+    }
+
+    if( wxTheClipboard->Open() ) {
+        wxTextDataObject* data = new wxTextDataObject;
+        data->SetText( result );
+        wxTheClipboard->SetData( data );
+        wxTheClipboard->Close();
+    }
 }
 
 void WeatherRouting::OnNewPosition( wxCommandEvent& event )
 {
     NewPositionDialog dlg(this);
     if(dlg.ShowModal() == wxID_OK) {
-        double lat=0, lon=0, lat_minutes=0, lon_minutes=0;
+        double lat=0, lon=0;
+        // double lat_minutes=0, lon_minutes=0;
 
         wxString latitude_degrees = dlg.m_tLatitudeDegrees->GetValue();
+        wxString longitude_degrees = dlg.m_tLongitudeDegrees->GetValue();
+        #if 0
         wxString latitude_minutes = dlg.m_tLatitudeMinutes->GetValue();
         latitude_degrees.ToDouble(&lat);
         latitude_minutes.ToDouble(&lat_minutes);
@@ -966,7 +1261,6 @@ void WeatherRouting::OnNewPosition( wxCommandEvent& event )
             lat_minutes = -lat_minutes;
         lat += lat_minutes / 60;
 
-        wxString longitude_degrees = dlg.m_tLongitudeDegrees->GetValue();
         wxString longitude_minutes = dlg.m_tLongitudeMinutes->GetValue();
         longitude_degrees.ToDouble(&lon);
         longitude_minutes.ToDouble(&lon_minutes);
@@ -974,6 +1268,10 @@ void WeatherRouting::OnNewPosition( wxCommandEvent& event )
         if(lon < 0)
             lon_minutes = -lon_minutes;
         lon += lon_minutes / 60;
+        #else
+            lat = fromDMM( latitude_degrees );
+            lon = fromDMM( longitude_degrees );
+        #endif
 
         AddPosition(lat, lon, dlg.m_tName->GetValue());
     }

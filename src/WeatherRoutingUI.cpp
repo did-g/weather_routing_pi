@@ -3037,7 +3037,7 @@ NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, c
 	m_tLatitudeDegrees = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	m_menu7 = new wxMenu();
 	wxMenuItem* m_menuItemCopy;
-	m_menuItemCopy = new wxMenuItem( m_menu7, ID_RCLK_MENU_COPY, wxString( _("Copy") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menuItemCopy = new wxMenuItem( m_menu7, ID_RCLK_MENU_COPY_LA, wxString( _("Copy") ) , wxEmptyString, wxITEM_NORMAL );
 	m_menu7->Append( m_menuItemCopy );
 
 	wxMenuItem* m_menuItem46;
@@ -3045,7 +3045,7 @@ NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, c
 	m_menu7->Append( m_menuItem46 );
 
 	wxMenuItem* m_menuItem47;
-	m_menuItem47 = new wxMenuItem( m_menu7, ID_RCLK_MENU_PASTE, wxString( _("Paste") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menuItem47 = new wxMenuItem( m_menu7, ID_RCLK_MENU_PASTE_LA, wxString( _("Paste") ) , wxEmptyString, wxITEM_NORMAL );
 	m_menu7->Append( m_menuItem47 );
 
 	wxMenuItem* m_menuItem48;
@@ -3076,7 +3076,7 @@ NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, c
 	m_tLongitudeDegrees = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	m_menu71 = new wxMenu();
 	wxMenuItem* m_menuItemCopy1;
-	m_menuItemCopy1 = new wxMenuItem( m_menu71, ID_RCLK_MENU_COPY, wxString( _("Copy") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menuItemCopy1 = new wxMenuItem( m_menu71, ID_RCLK_MENU_COPY_LO, wxString( _("Copy") ) , wxEmptyString, wxITEM_NORMAL );
 	m_menu71->Append( m_menuItemCopy1 );
 
 	wxMenuItem* m_menuItem461;
@@ -3084,7 +3084,7 @@ NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, c
 	m_menu71->Append( m_menuItem461 );
 
 	wxMenuItem* m_menuItem471;
-	m_menuItem471 = new wxMenuItem( m_menu71, ID_RCLK_MENU_PASTE, wxString( _("Paste") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menuItem471 = new wxMenuItem( m_menu71, ID_RCLK_MENU_PASTE_LO, wxString( _("Paste") ) , wxEmptyString, wxITEM_NORMAL );
 	m_menu71->Append( m_menuItem471 );
 
 	wxMenuItem* m_menuItem481;
@@ -3126,10 +3126,22 @@ NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, c
 	fgSizer120->Fit( this );
 
 	this->Centre( wxBOTH );
+
+	// Connect Events
+	m_menu7->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( NewPositionDialogBase::onMenuSelection ), this, m_menuItemCopy->GetId());
+	m_menu7->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( NewPositionDialogBase::onMenuSelection ), this, m_menuItem46->GetId());
+	m_menu7->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( NewPositionDialogBase::onMenuSelection ), this, m_menuItem47->GetId());
+	m_menu7->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( NewPositionDialogBase::onMenuSelection ), this, m_menuItem48->GetId());
+	m_menu71->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( NewPositionDialogBase::onMenuSelection ), this, m_menuItemCopy1->GetId());
+	m_menu71->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( NewPositionDialogBase::onMenuSelection ), this, m_menuItem461->GetId());
+	m_menu71->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( NewPositionDialogBase::onMenuSelection ), this, m_menuItem471->GetId());
+	m_menu71->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( NewPositionDialogBase::onMenuSelection ), this, m_menuItem481->GetId());
 }
 
 NewPositionDialogBase::~NewPositionDialogBase()
 {
+	// Disconnect Events
+
 	delete m_menu7;
 	delete m_menu71;
 }

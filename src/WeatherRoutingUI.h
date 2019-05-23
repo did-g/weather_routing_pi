@@ -54,10 +54,12 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define ID_RCLK_MENU_COPY 1000
+#define ID_RCLK_MENU_COPY_LA 1000
 #define ID_RCLK_MENU_COPY_LL 1001
-#define ID_RCLK_MENU_PASTE 1002
+#define ID_RCLK_MENU_PASTE_LA 1002
 #define ID_RCLK_MENU_PASTE_LL 1003
+#define ID_RCLK_MENU_COPY_LO 1004
+#define ID_RCLK_MENU_PASTE_LO 1005
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class WeatherRoutingBase
@@ -746,6 +748,10 @@ class NewPositionDialogBase : public wxDialog
 		wxStdDialogButtonSizer* m_sdbSizer4;
 		wxButton* m_sdbSizer4OK;
 		wxButton* m_sdbSizer4Cancel;
+
+		// Virtual event handlers, overide them in your derived class
+		virtual void onMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+
 
 	public:
 		wxTextCtrl* m_tName;

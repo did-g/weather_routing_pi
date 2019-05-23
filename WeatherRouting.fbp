@@ -20656,7 +20656,7 @@
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
                                 <property name="window_style"></property>
-                                <object class="wxMenu" expanded="0">
+                                <object class="wxMenu" expanded="1">
                                     <property name="label">MyMenu</property>
                                     <property name="name">m_menu7</property>
                                     <property name="permission">protected</property>
@@ -20665,13 +20665,14 @@
                                         <property name="checked">0</property>
                                         <property name="enabled">1</property>
                                         <property name="help"></property>
-                                        <property name="id">ID_RCLK_MENU_COPY</property>
+                                        <property name="id">ID_RCLK_MENU_COPY_LA</property>
                                         <property name="kind">wxITEM_NORMAL</property>
                                         <property name="label">Copy</property>
                                         <property name="name">m_menuItemCopy</property>
                                         <property name="permission">none</property>
                                         <property name="shortcut"></property>
                                         <property name="unchecked_bitmap"></property>
+                                        <event name="OnMenuSelection">onMenuSelection</event>
                                     </object>
                                     <object class="wxMenuItem" expanded="0">
                                         <property name="bitmap"></property>
@@ -20685,19 +20686,21 @@
                                         <property name="permission">none</property>
                                         <property name="shortcut"></property>
                                         <property name="unchecked_bitmap"></property>
+                                        <event name="OnMenuSelection">onMenuSelection</event>
                                     </object>
                                     <object class="wxMenuItem" expanded="0">
                                         <property name="bitmap"></property>
                                         <property name="checked">0</property>
                                         <property name="enabled">1</property>
                                         <property name="help"></property>
-                                        <property name="id">ID_RCLK_MENU_PASTE</property>
+                                        <property name="id">ID_RCLK_MENU_PASTE_LA</property>
                                         <property name="kind">wxITEM_NORMAL</property>
                                         <property name="label">Paste</property>
                                         <property name="name">m_menuItem47</property>
                                         <property name="permission">none</property>
                                         <property name="shortcut"></property>
                                         <property name="unchecked_bitmap"></property>
+                                        <event name="OnMenuSelection">onMenuSelection</event>
                                     </object>
                                     <object class="wxMenuItem" expanded="0">
                                         <property name="bitmap"></property>
@@ -20711,6 +20714,7 @@
                                         <property name="permission">none</property>
                                         <property name="shortcut"></property>
                                         <property name="unchecked_bitmap"></property>
+                                        <event name="OnMenuSelection">onMenuSelection</event>
                                     </object>
                                 </object>
                             </object>
@@ -21033,13 +21037,14 @@
                                         <property name="checked">0</property>
                                         <property name="enabled">1</property>
                                         <property name="help"></property>
-                                        <property name="id">ID_RCLK_MENU_COPY</property>
+                                        <property name="id">ID_RCLK_MENU_COPY_LO</property>
                                         <property name="kind">wxITEM_NORMAL</property>
                                         <property name="label">Copy</property>
                                         <property name="name">m_menuItemCopy1</property>
                                         <property name="permission">none</property>
                                         <property name="shortcut"></property>
                                         <property name="unchecked_bitmap"></property>
+                                        <event name="OnMenuSelection">onMenuSelection</event>
                                     </object>
                                     <object class="wxMenuItem" expanded="1">
                                         <property name="bitmap"></property>
@@ -21053,19 +21058,21 @@
                                         <property name="permission">none</property>
                                         <property name="shortcut"></property>
                                         <property name="unchecked_bitmap"></property>
+                                        <event name="OnMenuSelection">onMenuSelection</event>
                                     </object>
                                     <object class="wxMenuItem" expanded="1">
                                         <property name="bitmap"></property>
                                         <property name="checked">0</property>
                                         <property name="enabled">1</property>
                                         <property name="help"></property>
-                                        <property name="id">ID_RCLK_MENU_PASTE</property>
+                                        <property name="id">ID_RCLK_MENU_PASTE_LO</property>
                                         <property name="kind">wxITEM_NORMAL</property>
                                         <property name="label">Paste</property>
                                         <property name="name">m_menuItem471</property>
                                         <property name="permission">none</property>
                                         <property name="shortcut"></property>
                                         <property name="unchecked_bitmap"></property>
+                                        <event name="OnMenuSelection">onMenuSelection</event>
                                     </object>
                                     <object class="wxMenuItem" expanded="1">
                                         <property name="bitmap"></property>
@@ -21079,6 +21086,7 @@
                                         <property name="permission">none</property>
                                         <property name="shortcut"></property>
                                         <property name="unchecked_bitmap"></property>
+                                        <event name="OnMenuSelection">onMenuSelection</event>
                                     </object>
                                 </object>
                             </object>
