@@ -723,9 +723,9 @@ class RoutePositionDialog : public wxDialog
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Class NewPositionDialog
+/// Class NewPositionDialogBase
 ///////////////////////////////////////////////////////////////////////////////
-class NewPositionDialog : public wxDialog
+class NewPositionDialogBase : public wxDialog
 {
 	private:
 
@@ -748,8 +748,8 @@ class NewPositionDialog : public wxDialog
 		wxTextCtrl* m_tLongitudeDegrees;
 		wxTextCtrl* m_tLongitudeMinutes;
 
-		NewPositionDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("New Weather Routing Position"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
-		~NewPositionDialog();
+		NewPositionDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("New Weather Routing Position"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
+		~NewPositionDialogBase();
 
 };
 

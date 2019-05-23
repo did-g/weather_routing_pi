@@ -3000,7 +3000,7 @@ RoutePositionDialog::~RoutePositionDialog()
 {
 }
 
-NewPositionDialog::NewPositionDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 
@@ -3042,6 +3042,8 @@ NewPositionDialog::NewPositionDialog( wxWindow* parent, wxWindowID id, const wxS
 	fgSizer122->Add( m_staticText143, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 	m_tLatitudeMinutes = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_tLatitudeMinutes->Enable( false );
+
 	fgSizer122->Add( m_tLatitudeMinutes, 0, wxALL, 5 );
 
 	m_staticText144 = new wxStaticText( this, wxID_ANY, _("minutes"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -3060,6 +3062,8 @@ NewPositionDialog::NewPositionDialog( wxWindow* parent, wxWindowID id, const wxS
 	fgSizer122->Add( m_staticText146, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 	m_tLongitudeMinutes = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_tLongitudeMinutes->Enable( false );
+
 	fgSizer122->Add( m_tLongitudeMinutes, 0, wxALL, 5 );
 
 	m_staticText147 = new wxStaticText( this, wxID_ANY, _("minutes"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -3086,7 +3090,7 @@ NewPositionDialog::NewPositionDialog( wxWindow* parent, wxWindowID id, const wxS
 	this->Centre( wxBOTH );
 }
 
-NewPositionDialog::~NewPositionDialog()
+NewPositionDialogBase::~NewPositionDialogBase()
 {
 }
 
