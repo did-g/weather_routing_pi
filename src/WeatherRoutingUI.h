@@ -54,6 +54,10 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
+#define ID_RCLK_MENU_COPY 1000
+#define ID_RCLK_MENU_COPY_LL 1001
+#define ID_RCLK_MENU_PASTE 1002
+#define ID_RCLK_MENU_PASTE_LL 1003
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class WeatherRoutingBase
@@ -732,9 +736,11 @@ class NewPositionDialogBase : public wxDialog
 	protected:
 		wxStaticText* m_staticText140;
 		wxStaticText* m_staticText142;
+		wxMenu* m_menu7;
 		wxStaticText* m_staticText143;
 		wxStaticText* m_staticText144;
 		wxStaticText* m_staticText145;
+		wxMenu* m_menu71;
 		wxStaticText* m_staticText146;
 		wxStaticText* m_staticText147;
 		wxStdDialogButtonSizer* m_sdbSizer4;
@@ -750,6 +756,16 @@ class NewPositionDialogBase : public wxDialog
 
 		NewPositionDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("New Weather Routing Position"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
 		~NewPositionDialogBase();
+
+		void m_tLatitudeDegreesOnContextMenu( wxMouseEvent &event )
+		{
+			m_tLatitudeDegrees->PopupMenu( m_menu7, event.GetPosition() );
+		}
+
+		void m_tLongitudeDegreesOnContextMenu( wxMouseEvent &event )
+		{
+			m_tLongitudeDegrees->PopupMenu( m_menu71, event.GetPosition() );
+		}
 
 };
 

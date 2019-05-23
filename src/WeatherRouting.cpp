@@ -943,6 +943,14 @@ void WeatherRouting::UpdateRoutePositionDialog()
     dlg.Fit();
 }
 
+class NewPositionDialog : public NewPositionDialogBase 
+{
+    NewPositionDialog(wxWindow* parent) : NewPositionDialogBase(parent) 
+    {
+    }
+    
+}
+
 void WeatherRouting::OnNewPosition( wxCommandEvent& event )
 {
     NewPositionDialog dlg(this);

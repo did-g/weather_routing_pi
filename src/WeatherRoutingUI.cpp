@@ -3035,6 +3035,25 @@ NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, c
 	fgSizer122->Add( m_staticText142, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 	m_tLatitudeDegrees = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_menu7 = new wxMenu();
+	wxMenuItem* m_menuItemCopy;
+	m_menuItemCopy = new wxMenuItem( m_menu7, ID_RCLK_MENU_COPY, wxString( _("Copy") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menu7->Append( m_menuItemCopy );
+
+	wxMenuItem* m_menuItem46;
+	m_menuItem46 = new wxMenuItem( m_menu7, ID_RCLK_MENU_COPY_LL, wxString( _("Copy Lat/Lon") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menu7->Append( m_menuItem46 );
+
+	wxMenuItem* m_menuItem47;
+	m_menuItem47 = new wxMenuItem( m_menu7, ID_RCLK_MENU_PASTE, wxString( _("Paste") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menu7->Append( m_menuItem47 );
+
+	wxMenuItem* m_menuItem48;
+	m_menuItem48 = new wxMenuItem( m_menu7, ID_RCLK_MENU_PASTE_LL, wxString( _("Paste Lat/Lon") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menu7->Append( m_menuItem48 );
+
+	m_tLatitudeDegrees->Connect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( NewPositionDialogBase::m_tLatitudeDegreesOnContextMenu ), NULL, this );
+
 	fgSizer122->Add( m_tLatitudeDegrees, 0, wxALL, 5 );
 
 	m_staticText143 = new wxStaticText( this, wxID_ANY, _("degrees"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -3055,6 +3074,25 @@ NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, c
 	fgSizer122->Add( m_staticText145, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 	m_tLongitudeDegrees = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_menu71 = new wxMenu();
+	wxMenuItem* m_menuItemCopy1;
+	m_menuItemCopy1 = new wxMenuItem( m_menu71, ID_RCLK_MENU_COPY, wxString( _("Copy") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menu71->Append( m_menuItemCopy1 );
+
+	wxMenuItem* m_menuItem461;
+	m_menuItem461 = new wxMenuItem( m_menu71, ID_RCLK_MENU_COPY_LL, wxString( _("Copy Lat/Lon") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menu71->Append( m_menuItem461 );
+
+	wxMenuItem* m_menuItem471;
+	m_menuItem471 = new wxMenuItem( m_menu71, ID_RCLK_MENU_PASTE, wxString( _("Paste") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menu71->Append( m_menuItem471 );
+
+	wxMenuItem* m_menuItem481;
+	m_menuItem481 = new wxMenuItem( m_menu71, ID_RCLK_MENU_PASTE_LL, wxString( _("Paste Lat/Lon") ) , wxEmptyString, wxITEM_NORMAL );
+	m_menu71->Append( m_menuItem481 );
+
+	m_tLongitudeDegrees->Connect( wxEVT_RIGHT_DOWN, wxMouseEventHandler( NewPositionDialogBase::m_tLongitudeDegreesOnContextMenu ), NULL, this );
+
 	fgSizer122->Add( m_tLongitudeDegrees, 0, wxALL, 5 );
 
 	m_staticText146 = new wxStaticText( this, wxID_ANY, _("degrees"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -3092,6 +3130,8 @@ NewPositionDialogBase::NewPositionDialogBase( wxWindow* parent, wxWindowID id, c
 
 NewPositionDialogBase::~NewPositionDialogBase()
 {
+	delete m_menu7;
+	delete m_menu71;
 }
 
 EditPolarDialogBase::EditPolarDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
