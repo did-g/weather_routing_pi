@@ -430,6 +430,15 @@ void WeatherRouting::CopyDataFiles(wxString from, wxString to)
     }
 }
 
+static void set_lat_lon(wxListCtrl *l, long index, double lat, double lon)
+{
+    l->SetItem(index, WeatherRouting::POSITION_LAT, wxString::Format(_T("%.5f"), lat));
+    l->SetColumnWidth(WeatherRouting::POSITION_LAT, wxLIST_AUTOSIZE);
+
+    l->SetItem(index, WeatherRouting::POSITION_LON, wxString::Format(_T("%.5f"), lon));
+    l->SetColumnWidth(WeatherRouting::POSITION_LON, wxLIST_AUTOSIZE);
+}
+
 void WeatherRouting::Render(piDC &dc, PlugIn_ViewPort &vp)
 {
     if (vp.bValid == false)
@@ -466,10 +475,7 @@ void WeatherRouting::Render(piDC &dc, PlugIn_ViewPort &vp)
         // XXX FIXME there's already this name, update m_ConfigurationDialog source
         m_panel->m_lPositions->SetItem(index, POSITION_NAME, name);
         m_panel->m_lPositions->SetColumnWidth(POSITION_NAME, wxLIST_AUTOSIZE);
-        m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
-        m_panel->m_lPositions->SetColumnWidth(POSITION_LAT, wxLIST_AUTOSIZE);
-        m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
-        m_panel->m_lPositions->SetColumnWidth(POSITION_LON, wxLIST_AUTOSIZE);
+        set_lat_lon(m_panel->m_lPositions, index, lat, lon);
         work = true;
     }
     if (work) {
@@ -551,10 +557,7 @@ void WeatherRouting::AddPosition(double lat, double lon, wxString name)
 
                 it.lat = lat;
                 it.lon = lon;
-                m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
-                m_panel->m_lPositions->SetColumnWidth(POSITION_LAT, wxLIST_AUTOSIZE);
-                m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
-                m_panel->m_lPositions->SetColumnWidth(POSITION_LON, wxLIST_AUTOSIZE);
+                set_lat_lon(m_panel->m_lPositions, index, lat, lon);
                 UpdateConfigurations();
             }
             return;
@@ -570,10 +573,7 @@ void WeatherRouting::AddPosition(double lat, double lon, wxString name)
 
     m_panel->m_lPositions->SetItem(index, POSITION_NAME, name);
     m_panel->m_lPositions->SetColumnWidth(POSITION_NAME, wxLIST_AUTOSIZE);
-    m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
-    m_panel->m_lPositions->SetColumnWidth(POSITION_LAT, wxLIST_AUTOSIZE);
-    m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
-    m_panel->m_lPositions->SetColumnWidth(POSITION_LON, wxLIST_AUTOSIZE);
+    set_lat_lon(m_panel->m_lPositions, index, lat, lon);
 
     m_panel->m_lPositions->SetItemData(index, p.ID);
     m_ConfigurationDialog.AddSource(name);
@@ -598,10 +598,7 @@ void WeatherRouting::AddPosition(double lat, double lon, wxString name, wxString
             it.lon = lon;
             m_panel->m_lPositions->SetItem(index, POSITION_NAME, name);
             m_panel->m_lPositions->SetColumnWidth(POSITION_NAME, wxLIST_AUTOSIZE);
-            m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
-            m_panel->m_lPositions->SetColumnWidth(POSITION_LAT, wxLIST_AUTOSIZE);
-            m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
-            m_panel->m_lPositions->SetColumnWidth(POSITION_LON, wxLIST_AUTOSIZE);
+            set_lat_lon(m_panel->m_lPositions, index, lat, lon);
             UpdateConfigurations();
             return;
         }
@@ -615,11 +612,8 @@ void WeatherRouting::AddPosition(double lat, double lon, wxString name, wxString
     long index = m_panel->m_lPositions->InsertItem(m_panel->m_lPositions->GetItemCount(), item);
     m_panel->m_lPositions->SetItem(index, POSITION_NAME, name);
     m_panel->m_lPositions->SetColumnWidth(POSITION_NAME, wxLIST_AUTOSIZE);
-    
-    m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
-    m_panel->m_lPositions->SetColumnWidth(POSITION_LAT, wxLIST_AUTOSIZE);
-    m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
-    m_panel->m_lPositions->SetColumnWidth(POSITION_LON, wxLIST_AUTOSIZE);
+
+    set_lat_lon(m_panel->m_lPositions, index, lat, lon);
     m_panel->m_lPositions->SetItemData(index, p.ID);
 
     m_ConfigurationDialog.AddSource(name);
@@ -977,8 +971,7 @@ void WeatherRouting::OnUpdateBoat( wxCommandEvent& event )
     for(std::list<RouteMapPosition>::iterator it = RouteMap::Positions.begin();
         it != RouteMap::Positions.end(); it++, index++)
         if((*it).Name == _("Boat")) {
-            m_panel->m_lPositions->SetItem(index, POSITION_LAT, wxString::Format(_T("%.5f"), lat));
-            m_panel->m_lPositions->SetItem(index, POSITION_LON, wxString::Format(_T("%.5f"), lon));
+            set_lat_lon(m_panel->m_lPositions, index, lat, lon);
 
             (*it).lat = lat, (*it).lon = lon;
             UpdateConfigurations();
