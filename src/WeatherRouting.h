@@ -72,7 +72,7 @@ private:
     wxCollapsiblePane *m_colpane;
     wxWindow *m_colpaneWindow;
     WeatherRoutingPanel *m_panel;
-    
+    int m_iSDMMFormat{-1};    
 public:
     enum {POSITION_NAME=0, POSITION_LAT, POSITION_LON };
 

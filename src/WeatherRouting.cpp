@@ -443,7 +443,16 @@ void WeatherRouting::Render(piDC &dc, PlugIn_ViewPort &vp)
 {
     if (vp.bValid == false)
         return;
+    if (m_iSDMMFormat != GetLatLonFormat()) {
+        for(auto &it :RouteMap::Positions) {
+            long index = m_panel->m_lPositions->FindItem(0, it.ID);
+            assert(index >=0);
 
+            set_lat_lon(m_panel->m_lPositions, index, it.lat, it.lon);
+        }
+        m_iSDMMFormat = GetLatLonFormat();
+    }
+    
     // polling is bad
     bool work = false;
     for(auto &it :RouteMap::Positions) {
