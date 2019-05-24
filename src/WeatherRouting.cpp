@@ -750,9 +750,7 @@ void WeatherRouting::UpdateCursorPositionDialog()
     dlg.m_stTime->SetLabel(display_time.Format(_T("%x %H:%M")));
 
     RouteMapConfiguration configuration = rmo->GetConfiguration();
-    wxString pos = wxString::Format(_T("%4.2f%c %4.2f%c"),
-                                    fabs(p->lat), p->lat < 0 ? 'S' : 'N',
-                                    fabs(p->lon), p->lon < 0 ? 'W' : 'E');
+    wxString pos = toSDMM_PlugIn(1, p->lat, false) + _T("  ") +toSDMM_PlugIn(2, p->lon, false);
     dlg.m_stPosition->SetLabel(pos);
 
     if(p->polar == -1)
@@ -848,9 +846,7 @@ void WeatherRouting::UpdateRoutePositionDialog()
     dlg.m_stDuration->SetLabel(duration);
     
     // POSITION
-    wxString pos = wxString::Format(_T("%4.2f%c %4.2f%c"),
-                                    fabs(data.lat), data.lat < 0 ? 'S' : 'N',
-                                    fabs(data.lon), data.lon < 0 ? 'W' : 'E');
+    wxString pos = toSDMM_PlugIn(1, data.lat, false) + _T("  ") +toSDMM_PlugIn(2, data.lon, false);
     dlg.m_stPosition->SetLabel(pos);
     
     // POLAR
